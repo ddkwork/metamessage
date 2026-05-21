@@ -234,7 +234,7 @@ def get_mm_tag_for_field(cls: Type, field_name: str) -> Optional[Tag]:
 # ===== Python to Node Type Mapping =====
 
 _PYTHON_TYPE_TO_VALUETYPE: Dict[type, ValueType] = {
-    str: ValueType.String,
+    str: ValueType.Str,
     int: ValueType.Int,
     float: ValueType.Float64,
     bool: ValueType.Bool,
@@ -318,7 +318,7 @@ def value_to_node(value: Any, tag: Optional[Tag] = None, depth: int = 0, path: s
     # bool must be checked before int (bool is subclass of int in Python)
     if isinstance(value, bool):
         # Auto-detect type: override inherited/incorrect types
-        if tag.type in (ValueType(0), ValueType.String, ValueType.Int, ValueType.Float64):
+        if tag.type in (ValueType(0), ValueType.Str, ValueType.Int, ValueType.Float64):
             tag.type = ValueType.Bool
         if tag.type == ValueType.Bool:
             _, text = _validate_bool(value, tag)
@@ -326,7 +326,7 @@ def value_to_node(value: Any, tag: Optional[Tag] = None, depth: int = 0, path: s
         raise ValueError(f"{tag.type} unsupported type: bool")
 
     elif isinstance(value, int):
-        if tag.type in (ValueType(0), ValueType.String, ValueType.Float64, ValueType.Bool):
+        if tag.type in (ValueType(0), ValueType.Str, ValueType.Float64, ValueType.Bool):
             tag.type = ValueType.Int
         if tag.type in (ValueType.Int, ValueType.Int8, ValueType.Int16, ValueType.Int32, ValueType.Int64,
                         ValueType.Uint, ValueType.Uint8, ValueType.Uint16, ValueType.Uint32, ValueType.Uint64):
@@ -337,7 +337,7 @@ def value_to_node(value: Any, tag: Optional[Tag] = None, depth: int = 0, path: s
         raise ValueError(f"{tag.type} unsupported type: int")
 
     elif isinstance(value, float):
-        if tag.type in (ValueType(0), ValueType.String, ValueType.Int, ValueType.Bool):
+        if tag.type in (ValueType(0), ValueType.Str, ValueType.Int, ValueType.Bool):
             tag.type = ValueType.Float64
         if tag.type in (ValueType.Float32, ValueType.Float64):
             val_float = _validate_f(value, tag)
@@ -348,10 +348,10 @@ def value_to_node(value: Any, tag: Optional[Tag] = None, depth: int = 0, path: s
 
     elif isinstance(value, str):
         # Auto-detect: any non-string type that got inherited gets overridden
-        if tag.type == ValueType(0) or tag.type not in (ValueType.String, ValueType.Email, ValueType.Enum, ValueType.Decimal, ValueType.UUID,
+        if tag.type == ValueType(0) or tag.type not in (ValueType.Str, ValueType.Email, ValueType.Enum, ValueType.Decimal, ValueType.UUID,
                             ValueType.URL, ValueType.BigInt):
-            tag.type = ValueType.String
-        if tag.type in (ValueType.String, ValueType.Email, ValueType.Enum, ValueType.Decimal, ValueType.UUID,
+            tag.type = ValueType.Str
+        if tag.type in (ValueType.Str, ValueType.Email, ValueType.Enum, ValueType.Decimal, ValueType.UUID,
                         ValueType.URL, ValueType.BigInt):
             val_str = _validate_str(value, tag)
             if val_str is not None:
@@ -708,7 +708,7 @@ def _any_to_node_list(value: list, tag: Tag, depth: int, path: str) -> Arr:
     if depth > _MAX_DEPTH:
         raise ValueError(f"max depth: {_MAX_DEPTH}")
 
-    tag.type = ValueType.Slice
+    tag.type = ValueType.Vec
 
     items = []
     set_tag = False

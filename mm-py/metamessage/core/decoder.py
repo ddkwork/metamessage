@@ -548,85 +548,85 @@ class Decoder:
             tag.type = ValueType.Float64
             return Val(data=0.0, text='0.0', tag=tag, path=path), 1
         elif suffix == SimpleNullString:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data='', text='', tag=tag, path=path), 1
         elif suffix == SimpleNullBytes:
             tag.type = ValueType.Bytes
             return Val(data=b'', text='', tag=tag, path=path), 1
         elif suffix == SimpleCode:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='code', tag=tag, path=path), 1
         elif suffix == SimpleMessage:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='message', tag=tag, path=path), 1
         elif suffix == SimpleData:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='data', tag=tag, path=path), 1
         elif suffix == SimpleSuccess:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='success', tag=tag, path=path), 1
         elif suffix == SimpleError:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='error', tag=tag, path=path), 1
         elif suffix == SimpleUnknown:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='unknown', tag=tag, path=path), 1
         elif suffix == SimplePage:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='page', tag=tag, path=path), 1
         elif suffix == SimpleLimit:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='limit', tag=tag, path=path), 1
         elif suffix == SimpleOffset:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='offset', tag=tag, path=path), 1
         elif suffix == SimpleTotal:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='total', tag=tag, path=path), 1
         elif suffix == SimpleId:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='id', tag=tag, path=path), 1
         elif suffix == SimpleName:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='name', tag=tag, path=path), 1
         elif suffix == SimpleDescription:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='description', tag=tag, path=path), 1
         elif suffix == SimpleType:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='type', tag=tag, path=path), 1
         elif suffix == SimpleVersion:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='version', tag=tag, path=path), 1
         elif suffix == SimpleStatus:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='status', tag=tag, path=path), 1
         elif suffix == SimpleUrl:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='url', tag=tag, path=path), 1
         elif suffix == SimpleCreateTime:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='create_time', tag=tag, path=path), 1
         elif suffix == SimpleUpdateTime:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='update_time', tag=tag, path=path), 1
         elif suffix == SimpleDeleteTime:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='delete_time', tag=tag, path=path), 1
         elif suffix == SimpleAccount:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='account', tag=tag, path=path), 1
         elif suffix == SimpleToken:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='token', tag=tag, path=path), 1
         elif suffix == SimpleExpireTime:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='expire_time', tag=tag, path=path), 1
         elif suffix == SimpleKey:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='key', tag=tag, path=path), 1
         elif suffix == SimpleVal:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
             return Val(data=None, text='val', tag=tag, path=path), 1
         else:
             raise ValueError(f"unsupported simple value: {b}")
@@ -815,7 +815,7 @@ class Decoder:
             tag = Tag()
 
         if tag.type == ValueType.Unknown:
-            tag.type = ValueType.String
+            tag.type = ValueType.Str
 
         if tag.type == ValueType.Email:
             data = text
@@ -829,7 +829,7 @@ class Decoder:
                 text = str(data)
             except ValueError:
                 pass
-        elif tag.type == ValueType.String:
+        elif tag.type == ValueType.Str:
             data = text
         else:
             raise ValueError(f"unsupported string type: {tag.type}")
@@ -894,12 +894,12 @@ class Decoder:
     def _decode_array(self, b: int, tag: Optional[Tag], path: str) -> Tuple[Node, int]:
         if tag is None:
             tag = Tag()
-            tag.type = ValueType.Slice
+            tag.type = ValueType.Vec
         if tag.type == ValueType.Unknown:
             if tag.size > 0:
-                tag.type = ValueType.Array
+                tag.type = ValueType.Arr
             else:
-                tag.type = ValueType.Slice
+                tag.type = ValueType.Vec
 
         l1, l2 = _container_len(b)
 

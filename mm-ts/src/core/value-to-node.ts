@@ -261,10 +261,10 @@ function valueToNode(v: any, tag: Tag, depth: number, path: string): Node {
 
     case 'string':
       if (tag.type === ValueType.Unknown) {
-        tag.type = ValueType.String;
+        tag.type = ValueType.Str;
       }
       switch (tag.type) {
-        case ValueType.String: {
+        case ValueType.Str: {
           const result = tag.validateStr(v);
           if (!result.valid) {
             throw new Error(`validate failed: ${result.error}`);
@@ -483,11 +483,11 @@ function anyToArray(
   }
 
   if (tag.type === ValueType.Unknown) {
-    tag.type = ValueType.Slice;
+    tag.type = ValueType.Vec;
   }
 
   if (tag.size > 0) {
-    tag.type = ValueType.Array;
+    tag.type = ValueType.Arr;
   }
 
   const arrNode = new MMArray();

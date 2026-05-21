@@ -43,49 +43,49 @@ public class MmValidator
             case ValueType.BOOL:
                 ValidateBool(value, tag, result);
                 break;
-            case ValueType.INT:
+            case ValueType.I:
                 ValidateI(value, tag, result);
                 break;
-            case ValueType.INT8:
+            case ValueType.I8:
                 ValidateI8(value, tag, result);
                 break;
-            case ValueType.INT16:
+            case ValueType.I16:
                 ValidateI16(value, tag, result);
                 break;
-            case ValueType.INT32:
+            case ValueType.I32:
                 ValidateI32(value, tag, result);
                 break;
-            case ValueType.INT64:
+            case ValueType.I64:
                 ValidateI64(value, tag, result);
                 break;
-            case ValueType.UINT:
+            case ValueType.U:
                 ValidateU(value, tag, result);
                 break;
-            case ValueType.UINT8:
+            case ValueType.U8:
                 ValidateU8(value, tag, result);
                 break;
-            case ValueType.UINT16:
+            case ValueType.U16:
                 ValidateU16(value, tag, result);
                 break;
-            case ValueType.UINT32:
+            case ValueType.U32:
                 ValidateU32(value, tag, result);
                 break;
-            case ValueType.UINT64:
+            case ValueType.U64:
                 ValidateU64(value, tag, result);
                 break;
             case ValueType.BIGINT:
                 ValidateBiginteger(value, tag, result);
                 break;
-            case ValueType.FLOAT32:
+            case ValueType.F32:
                 ValidateF32(value, tag, result);
                 break;
-            case ValueType.FLOAT64:
+            case ValueType.F64:
                 ValidateF64(value, tag, result);
                 break;
             case ValueType.DECIMAL:
                 ValidateDecimal(value, tag, result);
                 break;
-            case ValueType.STRING:
+            case ValueType.STR:
                 ValidateStr(value, tag, result);
                 break;
             case ValueType.EMAIL:

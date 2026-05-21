@@ -107,7 +107,7 @@ def test_decode_object():
     dec = Decoder
     
     obj = Obj(fields=[
-        Field(key='name', value=Val('Alice', 'Alice', Tag(type=ValueType.String))),
+        Field(key='name', value=Val('Alice', 'Alice', Tag(type=ValueType.Str))),
         Field(key='age', value=Val(30, '30', Tag(type=ValueType.Int))),
     ])
     b = enc.encode(obj)
@@ -128,7 +128,7 @@ def test_decode_nested():
     
     nested = Obj(fields=[
         Field(key='user', value=Obj(fields=[
-            Field(key='name', value=Val('Bob', 'Bob', Tag(type=ValueType.String))),
+            Field(key='name', value=Val('Bob', 'Bob', Tag(type=ValueType.Str))),
             Field(key='scores', value=Arr(items=[
                 Val(10, '10', Tag(type=ValueType.Int)),
                 Val(20, '20', Tag(type=ValueType.Int)),
@@ -166,7 +166,7 @@ def test_empty_structures():
     
     # Single value
     for val, tag in [
-        ('', Tag(type=ValueType.String)),
+        ('', Tag(type=ValueType.Str)),
         (0, Tag(type=ValueType.Int)),
         (True, Tag(type=ValueType.Bool)),
     ]:

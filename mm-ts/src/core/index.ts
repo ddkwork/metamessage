@@ -44,7 +44,7 @@ function nodeToDecodedValue(node: Node): DecodedValue {
   } else if (node instanceof MMArray) {
     const elements = node.getElements();
     const value = elements.map((e) => nodeToDecodedValue(e).value);
-    return { type: ValueType.Array, value };
+    return { type: ValueType.Arr, value };
   }
   return { type: ValueType.Unknown, value: null };
 }

@@ -3,7 +3,7 @@ from metamessage.tag import Tag, ValueType
 from metamessage.types import Val
 
 # Test: 類型感知打印 - String 應該加引號
-v_str = Val(data='hello', text='hello', tag=Tag(type=ValueType.String))
+v_str = Val(data='hello', text='hello', tag=Tag(type=ValueType.Str))
 print(f'String: {to_jsonc(v_str)}')
 
 # Test: Int 不應加引號

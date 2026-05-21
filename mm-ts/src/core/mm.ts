@@ -43,7 +43,7 @@ export function toMM(inst: any) {
 }
 
 mm.str = (v: string, tag?: Tag) =>
-  new MMValue(v, { ...tag, type: ValueType.String } as Tag);
+  new MMValue(v, { ...tag, type: ValueType.Str } as Tag);
 mm.bool = (v: boolean, tag?: Tag) =>
   new MMValue(v, { ...tag, type: ValueType.Bool } as Tag);
 mm.bytes = (v: Uint8Array, tag?: Tag) =>
@@ -52,7 +52,7 @@ mm.arr = <T extends Node>(v: T[], size?: bigint, tag?: Tag) => {
   const arr = new MMArray();
   arr.setTag(
     Object.assign({}, tag, {
-      type: ValueType.Array,
+      type: ValueType.Arr,
       size: size ?? v.length,
     }),
   );
@@ -78,7 +78,7 @@ mm.slice = <T extends Node>(v: T[], tag?: Tag) => {
   const arr = new MMArray();
   arr.setTag(
     Object.assign({}, tag, {
-      type: ValueType.Slice,
+      type: ValueType.Vec,
     }),
   );
 

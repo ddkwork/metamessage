@@ -649,7 +649,7 @@ class Encoder:
                 self._encode_simple(SimpleNullFloat)
             else:
                 self._encode_float(val.text)
-        elif tag.type == ValueType.String:
+        elif tag.type == ValueType.Str:
             if tag.is_null:
                 self._encode_simple(SimpleNullString)
             else:
@@ -792,7 +792,7 @@ class Encoder:
             return Obj(fields=fields, tag=Tag(), path=path)
         elif isinstance(data, list):
             items = [self._struct_to_mm(item, f"{path}.{i}") for i, item in enumerate(data)]
-            return Arr(items=items, tag=Tag(type=ValueType.Array), path=path)
+            return Arr(items=items, tag=Tag(type=ValueType.Arr), path=path)
         elif isinstance(data, bool):
             return Val(data=data, text="true" if data else "false", tag=Tag(type=ValueType.Bool), path=path)
         elif isinstance(data, int):
@@ -800,10 +800,10 @@ class Encoder:
         elif isinstance(data, float):
             return Val(data=data, text=str(data), tag=Tag(type=ValueType.Float64), path=path)
         elif isinstance(data, str):
-            return Val(data=data, text=data, tag=Tag(type=ValueType.String), path=path)
+            return Val(data=data, text=data, tag=Tag(type=ValueType.Str), path=path)
         elif isinstance(data, bytes):
             return Val(data=data, text="", tag=Tag(type=ValueType.Bytes), path=path)
         elif data is None:
             return Val(data=None, text="null", tag=Tag(is_null=True), path=path)
         else:
-            return Val(data=data, text=str(data), tag=Tag(type=ValueType.String), path=path)
+            return Val(data=data, text=str(data), tag=Tag(type=ValueType.Str), path=path)

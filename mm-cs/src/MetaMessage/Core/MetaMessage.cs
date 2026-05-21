@@ -108,23 +108,23 @@ public static class MetaMessage
             case ValueType.BOOL:
                 encoder.EncodeSimple(SimpleValue.NULL_BOOL);
                 return;
-            case ValueType.INT:
-            case ValueType.INT8:
-            case ValueType.INT16:
-            case ValueType.INT32:
-            case ValueType.INT64:
-            case ValueType.UINT:
-            case ValueType.UINT16:
-            case ValueType.UINT32:
-            case ValueType.UINT64:
+            case ValueType.I:
+            case ValueType.I8:
+            case ValueType.I16:
+            case ValueType.I32:
+            case ValueType.I64:
+            case ValueType.U:
+            case ValueType.U16:
+            case ValueType.U32:
+            case ValueType.U64:
                 encoder.EncodeSimple(SimpleValue.NULL_INT);
                 return;
-            case ValueType.FLOAT32:
-            case ValueType.FLOAT64:
+            case ValueType.F32:
+            case ValueType.F64:
             case ValueType.DECIMAL:
                 encoder.EncodeSimple(SimpleValue.NULL_FLOAT);
                 return;
-            case ValueType.STRING:
+            case ValueType.STR:
             case ValueType.EMAIL:
             case ValueType.URL:
                 encoder.EncodeSimple(SimpleValue.NULL_STRING);
@@ -145,23 +145,23 @@ public static class MetaMessage
             case ValueType.BOOL:
                 encoder.EncodeBool((bool)value);
                 break;
-            case ValueType.INT:
-            case ValueType.INT8:
-            case ValueType.INT16:
-            case ValueType.INT32:
-            case ValueType.INT64:
-            case ValueType.UINT:
-            case ValueType.UINT16:
-            case ValueType.UINT32:
-            case ValueType.UINT64:
+            case ValueType.I:
+            case ValueType.I8:
+            case ValueType.I16:
+            case ValueType.I32:
+            case ValueType.I64:
+            case ValueType.U:
+            case ValueType.U16:
+            case ValueType.U32:
+            case ValueType.U64:
                 encoder.EncodeInt64(Convert.ToInt64(value));
                 break;
-            case ValueType.FLOAT32:
-            case ValueType.FLOAT64:
+            case ValueType.F32:
+            case ValueType.F64:
             case ValueType.DECIMAL:
                 encoder.EncodeFloatString(value.ToString()!);
                 break;
-            case ValueType.STRING:
+            case ValueType.STR:
             case ValueType.EMAIL:
             case ValueType.URL:
                 encoder.EncodeString(value as string ?? value.ToString()!);
@@ -467,22 +467,22 @@ public static class MetaMessage
                 case ValueType.BOOL:
                     result = new JsoncValue { Value = false, TokenType = JsoncTokenType.False };
                     break;
-                case ValueType.INT:
-                case ValueType.INT8:
-                case ValueType.INT16:
-                case ValueType.INT32:
-                case ValueType.INT64:
-                case ValueType.UINT:
-                case ValueType.UINT16:
-                case ValueType.UINT32:
-                case ValueType.UINT64:
+                case ValueType.I:
+                case ValueType.I8:
+                case ValueType.I16:
+                case ValueType.I32:
+                case ValueType.I64:
+                case ValueType.U:
+                case ValueType.U16:
+                case ValueType.U32:
+                case ValueType.U64:
                 case ValueType.BIGINT:
-                case ValueType.FLOAT32:
-                case ValueType.FLOAT64:
+                case ValueType.F32:
+                case ValueType.F64:
                 case ValueType.DECIMAL:
                     result = new JsoncValue { Value = 0L, TokenType = JsoncTokenType.Number };
                     break;
-                case ValueType.STRING:
+                case ValueType.STR:
                 case ValueType.EMAIL:
                 case ValueType.URL:
                 case ValueType.ENUM:
@@ -515,19 +515,19 @@ public static class MetaMessage
                         TokenType = (bool)scalar.Data ? JsoncTokenType.True : JsoncTokenType.False
                     };
                     break;
-                case ValueType.INT:
-                case ValueType.INT8:
-                case ValueType.INT16:
-                case ValueType.INT32:
-                case ValueType.INT64:
-                case ValueType.UINT:
-                case ValueType.UINT16:
-                case ValueType.UINT32:
-                case ValueType.UINT64:
+                case ValueType.I:
+                case ValueType.I8:
+                case ValueType.I16:
+                case ValueType.I32:
+                case ValueType.I64:
+                case ValueType.U:
+                case ValueType.U16:
+                case ValueType.U32:
+                case ValueType.U64:
                     result = new JsoncValue { Value = scalar.Data, TokenType = JsoncTokenType.Number };
                     break;
-                case ValueType.FLOAT32:
-                case ValueType.FLOAT64:
+                case ValueType.F32:
+                case ValueType.F64:
                 case ValueType.DECIMAL:
                     result = new JsoncValue { Value = scalar.Data, TokenType = JsoncTokenType.Number };
                     break;
@@ -538,7 +538,7 @@ public static class MetaMessage
                 case ValueType.UUID:
                 case ValueType.EMAIL:
                 case ValueType.URL:
-                case ValueType.STRING:
+                case ValueType.STR:
                     result = new JsoncValue { Value = scalar.Data?.ToString(), TokenType = JsoncTokenType.String };
                     break;
                 case ValueType.BYTES:

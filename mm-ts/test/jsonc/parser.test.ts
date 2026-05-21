@@ -154,13 +154,13 @@ describe('JSONC Tag Parser', () => {
   test('should parse simple tag', () => {
     const tagStr = 'type=str';
     const tag = parseMMTag(tagStr);
-    expect(tag.type).toBe(ValueType.String);
+    expect(tag.type).toBe(ValueType.Str);
   });
 
   test('should parse multiple tags', () => {
     const tagStr = 'type=str;desc=test;nullable';
     const tag = parseMMTag(tagStr);
-    expect(tag.type).toBe(ValueType.String);
+    expect(tag.type).toBe(ValueType.Str);
     expect(tag.desc).toBe('test');
     expect(tag.nullable).toBe(true);
   });
@@ -204,7 +204,7 @@ describe('JSONC Tag Parser', () => {
       ['url', ValueType.URL],
       ['email', ValueType.Email],
       ['enum', ValueType.Enum],
-      ['arr', ValueType.Array],
+      ['arr', ValueType.Arr],
       ['struct', ValueType.Object],
     ];
 

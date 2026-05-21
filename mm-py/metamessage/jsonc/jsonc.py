@@ -398,7 +398,7 @@ class Parser:
 
         if tok.type == TOKEN_STRING:
             if tag.type == ValueType.Unknown:
-                tag.type = ValueType.String
+                tag.type = ValueType.Str
             return Val(data=tok.literal, text=str(tok.literal), tag=tag, path=path)
         elif tok.type == TOKEN_NUMBER:
             if tag.type == ValueType.Unknown:
@@ -416,7 +416,7 @@ class Parser:
             tag.is_null = True
             tag.nullable = True
             if tag.type == ValueType.Unknown:
-                tag.type = ValueType.String
+                tag.type = ValueType.Str
             return Val(data=None, text="null", tag=tag, path=path)
         else:
             return Val(data=None, text="", tag=tag, path=path)
@@ -435,9 +435,9 @@ def parse_jsonc(source: str) -> Node:
 # Types that can be inferred and don't need explicit tags
 _INFERRED_TYPES = {
     ValueType.Object,
-    ValueType.Slice,
-    ValueType.Array,
-    ValueType.String,
+    ValueType.Vec,
+    ValueType.Arr,
+    ValueType.Str,
     ValueType.Int,
     ValueType.Float64,
     ValueType.Bool,
@@ -534,7 +534,7 @@ def write_value_jsonc(b: list, v) -> None:
     val_type = v.tag.type
 
     if v.tag.is_null:
-        if val_type in (ValueType.String, ValueType.Bytes, ValueType.DateTime,
+        if val_type in (ValueType.Str, ValueType.Bytes, ValueType.DateTime,
                         ValueType.Date, ValueType.Time, ValueType.UUID,
                         ValueType.IP, ValueType.URL, ValueType.Email,
                         ValueType.Enum, ValueType.Decimal):
@@ -551,7 +551,7 @@ def write_value_jsonc(b: list, v) -> None:
             b.append("null")
         return
 
-    if val_type in (ValueType.String, ValueType.Bytes, ValueType.DateTime,
+    if val_type in (ValueType.Str, ValueType.Bytes, ValueType.DateTime,
                     ValueType.Date, ValueType.Time, ValueType.UUID,
                     ValueType.IP, ValueType.URL, ValueType.Email,
                     ValueType.Enum):

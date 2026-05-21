@@ -82,25 +82,25 @@ def test_encode_string():
     dec = Decoder
     
     # Short string
-    b = enc.encode(Val('hello', 'hello', Tag(type=ValueType.String)))
+    b = enc.encode(Val('hello', 'hello', Tag(type=ValueType.Str)))
     # String prefix (0x80) | length 5 = 0x85
     assert b[0] == 0x85
     assert b[1:] == b'hello'
     assert dec(b).decode() == 'hello'
     
     # Empty string
-    b = enc.encode(Val('', '', Tag(type=ValueType.String)))
+    b = enc.encode(Val('', '', Tag(type=ValueType.Str)))
     assert b[0] == 0x80  # String | 0
     assert dec(b).decode() == ''
     
     # Longer string requiring extra length byte
     s = 'a' * 30
-    b = enc.encode(Val(s, s, Tag(type=ValueType.String)))
+    b = enc.encode(Val(s, s, Tag(type=ValueType.Str)))
     assert b[0] == 0x9E  # String | StringLen1Byte (0x1E = 30)
     assert b[1] == 30
     
     s2 = 'b' * 300
-    b = enc.encode(Val(s2, s2, Tag(type=ValueType.String)))
+    b = enc.encode(Val(s2, s2, Tag(type=ValueType.Str)))
     assert b[0] == 0x9F  # String | StringLen2Byte (0x1F = 31)
     assert (b[1] << 8) | b[2] == 300
 
@@ -156,7 +156,7 @@ def test_encode_object():
     dec = Decoder
     
     obj = Obj(fields=[
-        Field(key='name', value=Val('Alice', 'Alice', Tag(type=ValueType.String))),
+        Field(key='name', value=Val('Alice', 'Alice', Tag(type=ValueType.Str))),
         Field(key='age', value=Val(30, '30', Tag(type=ValueType.Int))),
     ])
     b = enc.encode(obj)
@@ -217,18 +217,18 @@ def test_roundtrip_complex():
     
     obj = Obj(fields=[
         Field(key='id', value=Val(42, '42', Tag(type=ValueType.Int))),
-        Field(key='name', value=Val('Bob', 'Bob', Tag(type=ValueType.String))),
+        Field(key='name', value=Val('Bob', 'Bob', Tag(type=ValueType.Str))),
         Field(key='active', value=Val(True, 'true', Tag(type=ValueType.Bool))),
         Field(key='score', value=Val(98.5, '98.5', Tag(type=ValueType.Float64))),
         Field(key='tags', value=Arr(items=[
-            Val('admin', 'admin', Tag(type=ValueType.String)),
-            Val('user', 'user', Tag(type=ValueType.String)),
+            Val('admin', 'admin', Tag(type=ValueType.Str)),
+            Val('user', 'user', Tag(type=ValueType.Str)),
         ])),
         Field(key='meta', value=Obj(fields=[
-            Field(key='created', value=Val('2024-01-15', '2024-01-15', Tag(type=ValueType.String))),
+            Field(key='created', value=Val('2024-01-15', '2024-01-15', Tag(type=ValueType.Str))),
             Field(key='count', value=Val(100, '100', Tag(type=ValueType.Int))),
         ])),
-        Field(key='data', value=Val(None, 'null', Tag(type=ValueType.String, is_null=True))),
+        Field(key='data', value=Val(None, 'null', Tag(type=ValueType.Str, is_null=True))),
     ])
     b = enc.encode(obj)
     result = dec(b).decode()
@@ -258,7 +258,7 @@ def test_null_values():
         ('bool', Tag(type=ValueType.Bool, is_null=True)),
         ('int', Tag(type=ValueType.Int, is_null=True)),
         ('float', Tag(type=ValueType.Float64, is_null=True)),
-        ('string', Tag(type=ValueType.String, is_null=True)),
+        ('string', Tag(type=ValueType.Str, is_null=True)),
     ]:
         v = Val(None, 'null', tag)
         b = enc.encode(v)

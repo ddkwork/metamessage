@@ -114,11 +114,11 @@ export class JSONCParser {
           }
 
           if (strTag.type === ValueType.Unknown) {
-            strTag.type = ValueType.String;
+            strTag.type = ValueType.Str;
           }
 
           switch (strTag.type) {
-            case ValueType.String:
+            case ValueType.Str:
               if (strTag.isNull) {
                 if (text !== '') {
                   throw new Error(`invalid string: "${text}", valid: ""`);
@@ -676,7 +676,7 @@ export class JSONCParser {
       tag = new Tag();
     }
     if (tag.type === ValueType.Unknown) {
-      tag.type = tag.size > 0 ? ValueType.Array : ValueType.Slice;
+      tag.type = tag.size > 0 ? ValueType.Arr : ValueType.Vec;
     }
 
     if (tag.name) {
@@ -733,7 +733,7 @@ export class JSONCParser {
       }
     }
 
-    if (tag.type === ValueType.Array) {
+    if (tag.type === ValueType.Arr) {
       const result = tag.validateArr([]);
       if (!result.valid) {
         throw new Error(`validate failed: ${result.error}`);

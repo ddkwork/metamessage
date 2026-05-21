@@ -80,15 +80,15 @@ export function stringToType(value: string): ValueType {
     case 'doc':
       return ValueType.Doc;
     case 'arr':
-      return ValueType.Array;
+      return ValueType.Arr;
     case 'vec':
-      return ValueType.Slice;
+      return ValueType.Vec;
     case 'obj':
       return ValueType.Object;
     case 'map':
       return ValueType.Map;
     case 'str':
-      return ValueType.String;
+      return ValueType.Str;
     case 'bytes':
       return ValueType.Bytes;
     case 'bool':

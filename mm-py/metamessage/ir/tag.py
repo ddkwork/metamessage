@@ -45,11 +45,11 @@ class ValueType(IntEnum):
         mapping = {
             ValueType.Unknown: "unknown",
             ValueType.Doc: "doc",
-            ValueType.Array: "arr",
-            ValueType.Slice: "vec",
+            ValueType.Arr: "arr",
+            ValueType.Vec: "vec",
             ValueType.Object: "obj",
             ValueType.Map: "map",
-            ValueType.String: "str",
+            ValueType.Str: "str",
             ValueType.Bytes: "bytes",
             ValueType.Bool: "bool",
             ValueType.Int: "i",
@@ -81,9 +81,9 @@ class ValueType(IntEnum):
 
 
 _str_to_value_type = {
-    "unknown": ValueType.Unknown, "doc": ValueType.Doc, "arr": ValueType.Array,
-    "vec": ValueType.Slice, "obj": ValueType.Object, "map": ValueType.Map,
-    "str": ValueType.String, "bytes": ValueType.Bytes, "bool": ValueType.Bool,
+    "unknown": ValueType.Unknown, "doc": ValueType.Doc, "arr": ValueType.Arr,
+    "vec": ValueType.Vec, "obj": ValueType.Object, "map": ValueType.Map,
+    "str": ValueType.Str, "bytes": ValueType.Bytes, "bool": ValueType.Bool,
     "i": ValueType.Int, "i8": ValueType.Int8, "i16": ValueType.Int16, "i32": ValueType.Int32, "i64": ValueType.Int64,
     "u": ValueType.Uint, "u8": ValueType.Uint8, "u16": ValueType.Uint16, "u32": ValueType.Uint32, "u64": ValueType.Uint64,
     "f32": ValueType.Float32, "f64": ValueType.Float64,
@@ -282,9 +282,9 @@ class Tag:
                 buf.extend(desc_bytes)
 
         if self.type != ValueType.Unknown and not self.is_inherit:
-            if self.type not in (ValueType.String, ValueType.Bytes, ValueType.Int, ValueType.Float64,
-                                 ValueType.Bool, ValueType.Object, ValueType.Slice):
-                if not (self.type == ValueType.Array and self.size > 0) and not (
+            if self.type not in (ValueType.Str, ValueType.Bytes, ValueType.Int, ValueType.Float64,
+                                 ValueType.Bool, ValueType.Object, ValueType.Vec):
+                if not (self.type == ValueType.Arr and self.size > 0) and not (
                         self.type == ValueType.Enum and self.enum):
                     buf.append(TagKey.Type)
                     buf.append(self.type)
@@ -390,9 +390,9 @@ class Tag:
                 buf.extend(child_desc_bytes)
 
         if self.child_type != ValueType.Unknown:
-            if self.child_type not in (ValueType.String, ValueType.Int, ValueType.Float64,
-                                       ValueType.Bool, ValueType.Object, ValueType.Slice):
-                if not (self.child_type == ValueType.Array and self.child_size > 0) and not (
+            if self.child_type not in (ValueType.Str, ValueType.Int, ValueType.Float64,
+                                       ValueType.Bool, ValueType.Object, ValueType.Vec):
+                if not (self.child_type == ValueType.Arr and self.child_size > 0) and not (
                         self.child_type == ValueType.Enum and self.child_enum):
                     buf.append(TagKey.ChildType)
                     buf.append(self.child_type)
@@ -491,11 +491,11 @@ class Tag:
         parts = []
 
         if self.type != ValueType.Unknown and not self.is_inherit:
-            if self.type in (ValueType.String, ValueType.Int, ValueType.Float64, ValueType.Bool,
-                             ValueType.Object, ValueType.Slice):
+            if self.type in (ValueType.Str, ValueType.Int, ValueType.Float64, ValueType.Bool,
+                             ValueType.Object, ValueType.Vec):
                 pass
             else:
-                if not (self.type == ValueType.Array and self.size > 0) and not (
+                if not (self.type == ValueType.Arr and self.size > 0) and not (
                         self.type == ValueType.Enum and self.enum):
                     parts.append("type=%s" % str(self.type))
 
@@ -558,9 +558,9 @@ class Tag:
             parts.append('child_desc="%s"' % self.child_desc)
 
         if self.child_type != ValueType.Unknown:
-            if self.child_type not in (ValueType.String, ValueType.Int, ValueType.Float64,
-                                       ValueType.Bool, ValueType.Object, ValueType.Slice):
-                if not (self.child_type == ValueType.Array and self.child_size > 0) and not (
+            if self.child_type not in (ValueType.Str, ValueType.Int, ValueType.Float64,
+                                       ValueType.Bool, ValueType.Object, ValueType.Vec):
+                if not (self.child_type == ValueType.Arr and self.child_size > 0) and not (
                         self.child_type == ValueType.Enum and self.child_enum):
                     parts.append("child_type=%s" % str(self.child_type))
 

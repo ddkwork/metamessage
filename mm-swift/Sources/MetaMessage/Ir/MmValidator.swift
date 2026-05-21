@@ -62,7 +62,7 @@ public class MmValidator {
             case .uuid:
                 validateUUID(value, tag: tag, result: result)
             case .dateTime, .date, .time:
-                validateDateTime(value, tag: tag, result: result)
+                validateDatetime(value, tag: tag, result: result)
             case .enumValue:
                 validateEnum(value, tag: tag, result: result)
             case .array, .slice:
@@ -626,7 +626,7 @@ public class MmValidator {
         }
     }
     
-    private func validateDateTime(_ value: Any, tag: JSONCTag, result: ValidationResult) {
+    private func validateDatetime(_ value: Any, tag: JSONCTag, result: ValidationResult) {
         if !(value is String) && !(value is Date) {
             result.addError("value must be a datetime")
         }

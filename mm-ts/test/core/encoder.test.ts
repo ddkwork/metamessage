@@ -180,24 +180,24 @@ describe('MM Encoder/Decoder', () => {
     test('should encode and decode non-empty string', () => {
       const encoded = encodeNode(mm.str('hello'));
       const decoded = decodeToValue(encoded);
-      expect(decoded.type).toBe(ValueType.String);
+      expect(decoded.type).toBe(ValueType.Str);
       expect(decoded.value).toBe('hello');
     });
 
     test('should encode and decode empty string with allowEmpty', () => {
       const tag = new Tag();
-      tag.type = ValueType.String;
+      tag.type = ValueType.Str;
       tag.allowEmpty = true;
       const encoded = encodeNode(mm.str('', tag));
       const decoded = decodeToValue(encoded);
-      expect(decoded.type).toBe(ValueType.String);
+      expect(decoded.type).toBe(ValueType.Str);
       expect(decoded.value).toBe('');
     });
 
     test('should encode and decode short string', () => {
       const encoded = encodeNode(mm.str('hello'));
       const decoded = decodeToValue(encoded);
-      expect(decoded.type).toBe(ValueType.String);
+      expect(decoded.type).toBe(ValueType.Str);
       expect(decoded.value).toBe('hello');
     });
 
@@ -205,7 +205,7 @@ describe('MM Encoder/Decoder', () => {
       const longString = 'a'.repeat(300);
       const encoded = encodeNode(mm.str(longString));
       const decoded = decodeToValue(encoded);
-      expect(decoded.type).toBe(ValueType.String);
+      expect(decoded.type).toBe(ValueType.Str);
       expect(decoded.value).toBe(longString);
     });
 
@@ -281,17 +281,17 @@ describe('MM Encoder/Decoder', () => {
     test('should encode and decode non-empty array', () => {
       const encoded = encodeNode(mm.arr([mm.i(1n), mm.i(2n), mm.i(3n)]));
       const decoded = decodeToValue(encoded);
-      expect(decoded.type).toBe(ValueType.Array);
+      expect(decoded.type).toBe(ValueType.Arr);
       expect(decoded.value.length).toBe(3);
     });
 
     test('should encode and decode empty array with allowEmpty', () => {
       const tag = new Tag();
-      tag.type = ValueType.Array;
+      tag.type = ValueType.Arr;
       tag.allowEmpty = true;
       const encoded = encodeNode(mm.arr([], undefined, tag));
       const decoded = decodeToValue(encoded);
-      expect(decoded.type).toBe(ValueType.Array);
+      expect(decoded.type).toBe(ValueType.Arr);
       expect(decoded.value.length).toBe(0);
     });
 
@@ -300,7 +300,7 @@ describe('MM Encoder/Decoder', () => {
         mm.arr([mm.i(1n), mm.i(2n), mm.i(3n), mm.i(4n), mm.i(5n)]),
       );
       const decoded = decodeToValue(encoded);
-      expect(decoded.type).toBe(ValueType.Array);
+      expect(decoded.type).toBe(ValueType.Arr);
       expect(decoded.value.length).toBe(5);
       expect(decoded.value[0]).toBe(1n);
       expect(decoded.value[1]).toBe(2n);
@@ -314,7 +314,7 @@ describe('MM Encoder/Decoder', () => {
     //     mm.arr([mm.i(1n), mm.str('hello'), mm.bool(true), mm.f64(3.14)]),
     //   );
     //   const decoded = decodeToValue(encoded);
-    //   expect(decoded.type).toBe(ValueType.Array);
+    //   expect(decoded.type).toBe(ValueType.Arr);
     //   expect(decoded.value.length).toBe(4);
     //   expect(decoded.value[0].toString()).toBe('1');
     //   expect(decoded.value[1]).toBe('hello');
@@ -416,7 +416,7 @@ describe('MM Encoder/Decoder', () => {
       const wrapped = mm.str('hello', tag);
       const encoded = encodeNode(wrapped);
       const decoded = decodeToValue(encoded);
-      expect(decoded.type).toBe(ValueType.String);
+      expect(decoded.type).toBe(ValueType.Str);
       expect(decoded.value).toBe('hello');
     });
   });

@@ -411,8 +411,8 @@ public class JsoncParser
 
         switch (jsoncTag.Type)
         {
-            case ValueType.String:
-                mmTag.Type = MmVT.STRING;
+            case ValueType.Str:
+                mmTag.Type = MmVT.STR;
                 break;
             case ValueType.Bytes:
                 mmTag.Type = MmVT.BYTES;
@@ -421,40 +421,40 @@ public class JsoncParser
                 mmTag.Type = MmVT.BOOL;
                 break;
             case ValueType.Int:
-                mmTag.Type = MmVT.INT;
+                mmTag.Type = MmVT.I;
                 break;
             case ValueType.Int8:
-                mmTag.Type = MmVT.INT8;
+                mmTag.Type = MmVT.I8;
                 break;
             case ValueType.Int16:
-                mmTag.Type = MmVT.INT16;
+                mmTag.Type = MmVT.I16;
                 break;
             case ValueType.Int32:
-                mmTag.Type = MmVT.INT32;
+                mmTag.Type = MmVT.I32;
                 break;
             case ValueType.Int64:
-                mmTag.Type = MmVT.INT64;
+                mmTag.Type = MmVT.I64;
                 break;
             case ValueType.Uint:
-                mmTag.Type = MmVT.UINT;
+                mmTag.Type = MmVT.U;
                 break;
             case ValueType.Uint8:
-                mmTag.Type = MmVT.UINT8;
+                mmTag.Type = MmVT.U8;
                 break;
             case ValueType.Uint16:
-                mmTag.Type = MmVT.UINT16;
+                mmTag.Type = MmVT.U16;
                 break;
             case ValueType.Uint32:
-                mmTag.Type = MmVT.UINT32;
+                mmTag.Type = MmVT.U32;
                 break;
             case ValueType.Uint64:
-                mmTag.Type = MmVT.UINT64;
+                mmTag.Type = MmVT.U64;
                 break;
             case ValueType.Float32:
-                mmTag.Type = MmVT.FLOAT32;
+                mmTag.Type = MmVT.F32;
                 break;
             case ValueType.Float64:
-                mmTag.Type = MmVT.FLOAT64;
+                mmTag.Type = MmVT.F64;
                 break;
             case ValueType.Decimal:
                 mmTag.Type = MmVT.DECIMAL;
@@ -495,13 +495,13 @@ public class JsoncParser
             case ValueType.Doc:
                 mmTag.Type = MmVT.DOC;
                 break;
-            case ValueType.Struct:
+            case ValueType.Obj:
                 mmTag.Type = MmVT.OBJ;
                 break;
-            case ValueType.Array:
-                mmTag.Type = MmVT.ARRAY;
+            case ValueType.Arr:
+                mmTag.Type = MmVT.ARR;
                 break;
-            case ValueType.Slice:
+            case ValueType.Vec:
                 mmTag.Type = MmVT.VEC;
                 break;
             case ValueType.Map:

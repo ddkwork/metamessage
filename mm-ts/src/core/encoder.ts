@@ -200,7 +200,7 @@ export class MMEncoder {
         }
         break;
 
-      case ValueType.String:
+      case ValueType.Str:
         if (tag.isNull) {
           n = this.encodeSimple(SimpleValue.NullString);
         } else {

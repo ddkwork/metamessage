@@ -74,7 +74,7 @@ export class JSONCPrinter {
 
       case ValueType.Bool:
         return val ? 'true' : 'false';
-      case ValueType.String:
+      case ValueType.Str:
         return `"${val}"`;
       case ValueType.Bytes:
         return `"${uint8ToBase64(val)}"`;

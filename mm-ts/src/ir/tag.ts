@@ -144,16 +144,16 @@ export class Tag {
     const parts: string[] = [];
     if (this.type !== ValueType.Unknown) {
       if (
-        this.type === ValueType.String ||
+        this.type === ValueType.Str ||
         this.type === ValueType.Int ||
         this.type === ValueType.Float64 ||
         this.type === ValueType.Bool ||
         this.type === ValueType.Object ||
-        this.type === ValueType.Slice
+        this.type === ValueType.Vec
       ) {
       } else {
         if (
-          (this.type === ValueType.Array && this.size > 0) ||
+          (this.type === ValueType.Arr && this.size > 0) ||
           (this.type === ValueType.Enum && this.enum !== '')
         ) {
         } else {
@@ -234,16 +234,16 @@ export class Tag {
 
     if (this.childType) {
       if (
-        this.childType === ValueType.String ||
+        this.childType === ValueType.Str ||
         this.childType === ValueType.Int ||
         this.childType === ValueType.Float64 ||
         this.childType === ValueType.Bool ||
         this.childType === ValueType.Object ||
-        this.childType === ValueType.Slice
+        this.childType === ValueType.Vec
       ) {
       } else {
         if (
-          (this.childType === ValueType.Array &&
+          (this.childType === ValueType.Arr &&
             this.childSize &&
             this.childSize > 0) ||
           (this.childType === ValueType.Enum && this.childEnum)
@@ -432,17 +432,17 @@ export class Tag {
 
     if (this.type !== ValueType.Unknown && !this.isInherit) {
       if (
-        this.type === ValueType.String ||
+        this.type === ValueType.Str ||
         this.type === ValueType.Bytes ||
         this.type === ValueType.Int ||
         this.type === ValueType.Float64 ||
         this.type === ValueType.Bool ||
         this.type === ValueType.Object ||
-        this.type === ValueType.Slice
+        this.type === ValueType.Vec
       ) {
       } else {
         if (
-          (this.type === ValueType.Array && this.size > 0) ||
+          (this.type === ValueType.Arr && this.size > 0) ||
           (this.type === ValueType.Enum && this.enum !== '')
         ) {
         } else {
@@ -593,16 +593,16 @@ export class Tag {
 
     if (this.childType !== ValueType.Unknown) {
       if (
-        this.childType === ValueType.String ||
+        this.childType === ValueType.Str ||
         this.childType === ValueType.Int ||
         this.childType === ValueType.Float64 ||
         this.childType === ValueType.Bool ||
         this.childType === ValueType.Object ||
-        this.childType === ValueType.Slice
+        this.childType === ValueType.Vec
       ) {
       } else {
         if (
-          (this.childType === ValueType.Array && this.childSize > 0) ||
+          (this.childType === ValueType.Arr && this.childSize > 0) ||
           (this.childType === ValueType.Enum && this.childEnum !== '')
         ) {
         } else {

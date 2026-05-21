@@ -112,7 +112,7 @@ def test_to_jsonc():
     from metamessage.ir.types import Obj, Arr, Val, Field
     
     obj = Obj(fields=[
-        Field(key='name', value=Val('Alice', 'Alice', Tag(type=ValueType.String))),
+        Field(key='name', value=Val('Alice', 'Alice', Tag(type=ValueType.Str))),
     ])
     jsonc_out = to_jsonc(obj)
     # Should contain the key
@@ -166,7 +166,7 @@ def test_null_output_has_default():
     from metamessage.ir.types import Val, Obj, Field
     
     obj = Obj(fields=[
-        Field(key='s', value=Val(None, 'null', Tag(type=ValueType.String, is_null=True))),
+        Field(key='s', value=Val(None, 'null', Tag(type=ValueType.Str, is_null=True))),
         Field(key='n', value=Val(None, 'null', Tag(type=ValueType.Int, is_null=True))),
         Field(key='b', value=Val(None, 'null', Tag(type=ValueType.Bool, is_null=True))),
     ])

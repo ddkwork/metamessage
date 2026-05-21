@@ -991,12 +991,12 @@ class MmValidator:
 
     @staticmethod
     def validate(value: Any, tag: Tag) -> ValidationResult:
-        if tag.type == ValueType.Array:
+        if tag.type == ValueType.Arr:
             if isinstance(value, list):
                 return MmValidator.validate_arr(value, tag)
             else:
                 return ValidationResult(False, "expected array, got %s" % type(value).__name__)
-        elif tag.type == ValueType.Slice:
+        elif tag.type == ValueType.Vec:
             if isinstance(value, list):
                 return MmValidator.validate_vec(value, tag)
             else:
@@ -1005,7 +1005,7 @@ class MmValidator:
             return MmValidator.validate_obj(tag)
         elif tag.type == ValueType.Map:
             return MmValidator.validate_map(tag)
-        elif tag.type == ValueType.String:
+        elif tag.type == ValueType.Str:
             if isinstance(value, str):
                 return MmValidator.validate_str(value, tag)
             else:

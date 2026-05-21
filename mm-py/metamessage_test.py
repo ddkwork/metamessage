@@ -92,14 +92,14 @@ class TestEncoderValueTypes(unittest.TestCase):
         self.encoder = Encoder()
 
     def test_encode_string(self):
-        t = Tag(type=ValueType.String)
+        t = Tag(type=ValueType.Str)
         v = Val(data="hello", text="hello", tag=t)
         result = self.encoder.encode(v)
         self.assertIsInstance(result, bytes)
         self.assertGreater(len(result), 0)
 
     def test_encode_string_with_tag(self):
-        t = Tag(type=ValueType.String, desc="test desc")
+        t = Tag(type=ValueType.Str, desc="test desc")
         v = Val(data="hello", text="hello", tag=t)
         result = self.encoder.encode(v)
         self.assertIsInstance(result, bytes)
@@ -271,17 +271,17 @@ class TestEncoderComplexTypes(unittest.TestCase):
         self.encoder = Encoder()
 
     def test_encode_array_empty(self):
-        arr = Arr(items=[], tag=Tag(type=ValueType.Array))
+        arr = Arr(items=[], tag=Tag(type=ValueType.Arr))
         result = self.encoder.encode(arr)
         self.assertIsInstance(result, bytes)
 
     def test_encode_array_with_strings(self):
         arr = Arr(
             items=[
-                Val(data="a", text="a", tag=Tag(type=ValueType.String)),
-                Val(data="b", text="b", tag=Tag(type=ValueType.String)),
+                Val(data="a", text="a", tag=Tag(type=ValueType.Str)),
+                Val(data="b", text="b", tag=Tag(type=ValueType.Str)),
             ],
-            tag=Tag(type=ValueType.Array, child_type=ValueType.String)
+            tag=Tag(type=ValueType.Arr, child_type=ValueType.Str)
         )
         result = self.encoder.encode(arr)
         self.assertIsInstance(result, bytes)
@@ -293,7 +293,7 @@ class TestEncoderComplexTypes(unittest.TestCase):
                 Val(data=1, text="1", tag=Tag(type=ValueType.Int)),
                 Val(data=2, text="2", tag=Tag(type=ValueType.Int)),
             ],
-            tag=Tag(type=ValueType.Array, child_type=ValueType.Int)
+            tag=Tag(type=ValueType.Arr, child_type=ValueType.Int)
         )
         result = self.encoder.encode(arr)
         self.assertIsInstance(result, bytes)
@@ -308,7 +308,7 @@ class TestEncoderComplexTypes(unittest.TestCase):
             fields=[
                 Field(
                     key="name",
-                    value=Val(data="John", text="John", tag=Tag(type=ValueType.String))
+                    value=Val(data="John", text="John", tag=Tag(type=ValueType.Str))
                 ),
                 Field(
                     key="age",
@@ -326,7 +326,7 @@ class TestEncoderComplexTypes(unittest.TestCase):
             fields=[
                 Field(
                     key="city",
-                    value=Val(data="Beijing", text="Beijing", tag=Tag(type=ValueType.String))
+                    value=Val(data="Beijing", text="Beijing", tag=Tag(type=ValueType.Str))
                 ),
             ],
             tag=Tag(name="address")
@@ -335,7 +335,7 @@ class TestEncoderComplexTypes(unittest.TestCase):
             fields=[
                 Field(
                     key="name",
-                    value=Val(data="John", text="John", tag=Tag(type=ValueType.String))
+                    value=Val(data="John", text="John", tag=Tag(type=ValueType.Str))
                 ),
                 Field(
                     key="address",
@@ -377,7 +377,7 @@ class TestEncoderEdgeCases(unittest.TestCase):
         self.assertIsInstance(result, bytes)
 
     def test_encode_empty_string(self):
-        t = Tag(type=ValueType.String)
+        t = Tag(type=ValueType.Str)
         v = Val(data="", text="", tag=t)
         result = self.encoder.encode(v)
         self.assertIsInstance(result, bytes)
@@ -385,12 +385,12 @@ class TestEncoderEdgeCases(unittest.TestCase):
 
 class TestTag(unittest.TestCase):
     def test_tag_basic(self):
-        t = Tag(type=ValueType.String, desc="test")
-        self.assertEqual(t.type, ValueType.String)
+        t = Tag(type=ValueType.Str, desc="test")
+        self.assertEqual(t.type, ValueType.Str)
         self.assertEqual(t.desc, "test")
 
     def test_tag_bytes(self):
-        t = Tag(type=ValueType.String)
+        t = Tag(type=ValueType.Str)
         b = t.bytes()
         self.assertIsInstance(b, bytes)
 
@@ -403,7 +403,7 @@ class TestTag(unittest.TestCase):
 
 class TestToJSONC(unittest.TestCase):
     def test_to_jsonc_value_string(self):
-        v = Val(data="hello", text="hello", tag=Tag(type=ValueType.String))
+        v = Val(data="hello", text="hello", tag=Tag(type=ValueType.Str))
         result = to_jsonc(v)
         self.assertEqual(result, '"hello"')
 
@@ -425,7 +425,7 @@ class TestToJSONC(unittest.TestCase):
     def test_to_jsonc_object(self):
         obj = Obj(
             fields=[
-                Field(key="name", value=Val(data="John", text="John", tag=Tag(type=ValueType.String))),
+                Field(key="name", value=Val(data="John", text="John", tag=Tag(type=ValueType.Str))),
                 Field(key="age", value=Val(data=30, text="30", tag=Tag(type=ValueType.Int))),
             ],
             tag=Tag(name="person")
@@ -439,10 +439,10 @@ class TestToJSONC(unittest.TestCase):
     def test_to_jsonc_array(self):
         arr = Arr(
             items=[
-                Val(data="a", text="a", tag=Tag(type=ValueType.String)),
-                Val(data="b", text="b", tag=Tag(type=ValueType.String)),
+                Val(data="a", text="a", tag=Tag(type=ValueType.Str)),
+                Val(data="b", text="b", tag=Tag(type=ValueType.Str)),
             ],
-            tag=Tag(type=ValueType.Array)
+            tag=Tag(type=ValueType.Arr)
         )
         result = to_jsonc(arr)
         self.assertIn('[', result)
@@ -451,7 +451,7 @@ class TestToJSONC(unittest.TestCase):
     def test_to_jsonc_object_with_tag(self):
         obj = Obj(
             fields=[
-                Field(key="name", value=Val(data="John", text="John", tag=Tag(type=ValueType.String, desc="user name"))),
+                Field(key="name", value=Val(data="John", text="John", tag=Tag(type=ValueType.Str, desc="user name"))),
             ],
             tag=Tag(name="person")
         )
@@ -465,7 +465,7 @@ class TestEncoderDecoder(unittest.TestCase):
         self.encoder = Encoder()
 
     def test_encode_decode_string(self):
-        t = Tag(type=ValueType.String)
+        t = Tag(type=ValueType.Str)
         v = Val(data="hello", text="hello", tag=t)
         encoded = self.encoder.encode(v)
         decoder = Decoder(encoded)
@@ -523,10 +523,10 @@ class TestEncoderDecoder(unittest.TestCase):
     def test_encode_decode_array(self):
         arr = Arr(
             items=[
-                Val(data="a", text="a", tag=Tag(type=ValueType.String)),
-                Val(data="b", text="b", tag=Tag(type=ValueType.String)),
+                Val(data="a", text="a", tag=Tag(type=ValueType.Str)),
+                Val(data="b", text="b", tag=Tag(type=ValueType.Str)),
             ],
-            tag=Tag(type=ValueType.Array, child_type=ValueType.String)
+            tag=Tag(type=ValueType.Arr, child_type=ValueType.Str)
         )
         encoded = self.encoder.encode(arr)
         decoder = Decoder(encoded)
@@ -539,7 +539,7 @@ class TestEncoderDecoder(unittest.TestCase):
             fields=[
                 Field(
                     key="name",
-                    value=Val(data="John", text="John", tag=Tag(type=ValueType.String))
+                    value=Val(data="John", text="John", tag=Tag(type=ValueType.Str))
                 ),
                 Field(
                     key="age",
@@ -560,7 +560,7 @@ class TestEncoderDecoder(unittest.TestCase):
             fields=[
                 Field(
                     key="city",
-                    value=Val(data="Beijing", text="Beijing", tag=Tag(type=ValueType.String))
+                    value=Val(data="Beijing", text="Beijing", tag=Tag(type=ValueType.Str))
                 ),
             ],
             tag=Tag(name="address")
@@ -569,7 +569,7 @@ class TestEncoderDecoder(unittest.TestCase):
             fields=[
                 Field(
                     key="name",
-                    value=Val(data="John", text="John", tag=Tag(type=ValueType.String))
+                    value=Val(data="John", text="John", tag=Tag(type=ValueType.Str))
                 ),
                 Field(
                     key="address",

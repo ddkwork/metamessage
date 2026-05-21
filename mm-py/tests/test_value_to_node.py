@@ -29,7 +29,7 @@ def test_value_to_node_basic():
     # String
     node = value_to_node("hello")
     assert node.text == "hello"
-    assert node.tag.type == ValueType.String
+    assert node.tag.type == ValueType.Str
 
     # Int
     node = value_to_node(42)
@@ -50,7 +50,7 @@ def test_value_to_node_basic():
 
     # None (needs a tag with type)
     tag = NewTag()
-    tag.type = ValueType.String
+    tag.type = ValueType.Str
     node = value_to_node(None, tag)
     assert node.tag.is_null == True
     assert node.data is None
@@ -66,7 +66,7 @@ def test_value_to_node_dict():
 
     fields = {f.key: f.value for f in node.fields}
     assert fields["name"].text == "Alice"
-    assert fields["name"].tag.type == ValueType.String
+    assert fields["name"].tag.type == ValueType.Str
     assert fields["age"].data == 30
 
     print("  dict to node OK")

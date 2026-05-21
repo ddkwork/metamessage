@@ -10,43 +10,43 @@ public static class TypeInference
         }
         else if (type == typeof(sbyte) || type == typeof(sbyte?))
         {
-            return ValueType.INT8;
+            return ValueType.I8;
         }
         else if (type == typeof(short) || type == typeof(short?))
         {
-            return ValueType.INT16;
+            return ValueType.I16;
         }
         else if (type == typeof(int) || type == typeof(int?))
         {
-            return ValueType.INT32;
+            return ValueType.I32;
         }
         else if (type == typeof(long) || type == typeof(long?))
         {
-            return ValueType.INT64;
+            return ValueType.I64;
         }
         else if (type == typeof(byte) || type == typeof(byte?))
         {
-            return ValueType.UINT;
+            return ValueType.U;
         }
         else if (type == typeof(ushort) || type == typeof(ushort?))
         {
-            return ValueType.UINT16;
+            return ValueType.U16;
         }
         else if (type == typeof(uint) || type == typeof(uint?))
         {
-            return ValueType.UINT32;
+            return ValueType.U32;
         }
         else if (type == typeof(ulong) || type == typeof(ulong?))
         {
-            return ValueType.UINT64;
+            return ValueType.U64;
         }
         else if (type == typeof(float) || type == typeof(float?))
         {
-            return ValueType.FLOAT32;
+            return ValueType.F32;
         }
         else if (type == typeof(double) || type == typeof(double?))
         {
-            return ValueType.FLOAT64;
+            return ValueType.F64;
         }
         else if (type == typeof(decimal) || type == typeof(decimal?))
         {
@@ -54,7 +54,7 @@ public static class TypeInference
         }
         else if (type == typeof(string))
         {
-            return ValueType.STRING;
+            return ValueType.STR;
         }
         else if (type == typeof(byte[]))
         {

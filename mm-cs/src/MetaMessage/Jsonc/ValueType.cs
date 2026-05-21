@@ -88,11 +88,11 @@ public static class ValueTypeExtensions
     {
         { ValueTypeConstants.UnknownStr, ValueType.Unknown },
         { ValueTypeConstants.DocStr, ValueType.Doc },
-        { ValueTypeConstants.ArrayStr, ValueType.Array },
-        { ValueTypeConstants.SliceStr, ValueType.Slice },
-        { ValueTypeConstants.ObjectStr, ValueType.Struct },
+        { ValueTypeConstants.ArrayStr, ValueType.Arr },
+        { ValueTypeConstants.SliceStr, ValueType.Vec },
+        { ValueTypeConstants.ObjectStr, ValueType.Obj },
         { ValueTypeConstants.MapStr, ValueType.Map },
-        { ValueTypeConstants.StringStr, ValueType.String },
+        { ValueTypeConstants.StringStr, ValueType.Str },
         { ValueTypeConstants.BytesStr, ValueType.Bytes },
         { ValueTypeConstants.BoolStr, ValueType.Bool },
         { ValueTypeConstants.IntStr, ValueType.Int },
@@ -127,11 +127,11 @@ public static class ValueTypeExtensions
         {
             ValueType.Unknown => ValueTypeConstants.UnknownStr,
             ValueType.Doc => ValueTypeConstants.DocStr,
-            ValueType.Array => ValueTypeConstants.ArrayStr,
-            ValueType.Slice => ValueTypeConstants.SliceStr,
-            ValueType.Struct => ValueTypeConstants.ObjectStr,
+            ValueType.Arr => ValueTypeConstants.ArrayStr,
+            ValueType.Vec => ValueTypeConstants.SliceStr,
+            ValueType.Obj => ValueTypeConstants.ObjectStr,
             ValueType.Map => ValueTypeConstants.MapStr,
-            ValueType.String => ValueTypeConstants.StringStr,
+            ValueType.Str => ValueTypeConstants.StringStr,
             ValueType.Bytes => ValueTypeConstants.BytesStr,
             ValueType.Bool => ValueTypeConstants.BoolStr,
             ValueType.Int => ValueTypeConstants.IntStr,
@@ -176,7 +176,7 @@ public static class ValueTypeExtensions
     {
         return vt switch
         {
-            ValueType.String => true,
+            ValueType.Str => true,
             ValueType.Bytes => true,
             ValueType.DateTime => true,
             ValueType.Date => true,

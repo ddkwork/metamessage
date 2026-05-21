@@ -273,7 +273,7 @@ public class ComprehensiveTests
     [Fact]
     public void TestEncodeTree_DecodeToTree_Scalar()
     {
-        var scalar = new MmScalar("hello", "hello", new MmTag { Type = MmVT.STRING });
+        var scalar = new MmScalar("hello", "hello", new MmTag { Type = MmVT.STR });
         byte[] encoded = EncodeTree(scalar);
         var decoded = DecodeToTree(encoded);
         var resultScalar = Assert.IsType<MmScalar>(decoded);
@@ -301,8 +301,8 @@ public class ComprehensiveTests
     {
         var entries = new List<KeyValuePair<MmScalar, IMmTree>>
         {
-            new(new MmScalar("name", "name", new MmTag { Type = MmVT.STRING }),
-                new MmScalar("test", "test", new MmTag { Type = MmVT.STRING })),
+            new(new MmScalar("name", "name", new MmTag { Type = MmVT.STR }),
+                new MmScalar("test", "test", new MmTag { Type = MmVT.STR })),
         };
         var map = new MmMap(entries, new MmTag { Type = MmVT.MAP });
         byte[] encoded = EncodeTree(map);
@@ -646,7 +646,7 @@ public class ComprehensiveTests
     public void TestValidate_RequiredField()
     {
         var tag = MmTag.Empty();
-        tag.Type = MmVT.STRING;
+        tag.Type = MmVT.STR;
         tag.Nullable = false;
 
         var validResult = Validator.Validate("hello", tag);

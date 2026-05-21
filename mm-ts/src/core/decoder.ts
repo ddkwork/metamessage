@@ -210,7 +210,7 @@ export class MMDecoder {
         case ValueType.UUID:
         case ValueType.Decimal:
         case ValueType.URL:
-        case ValueType.String:
+        case ValueType.Str:
           return new MMValue('', tag);
         case ValueType.BigInt:
           return new MMValue(BigInt(0), tag);
@@ -687,7 +687,7 @@ export class MMDecoder {
         break;
       case SimpleValue.NullString:
         if (tag.type === ValueType.Unknown) {
-          tag.type = ValueType.String;
+          tag.type = ValueType.Str;
         }
         data = '';
         text = '';
@@ -1003,14 +1003,14 @@ export class MMDecoder {
       tag = new Tag();
     }
     if (tag.type === ValueType.Unknown) {
-      tag.type = ValueType.String;
+      tag.type = ValueType.Str;
     }
 
     let data: any;
 
     switch (tag.type) {
       case ValueType.Email:
-      case ValueType.String:
+      case ValueType.Str:
         data = text;
         break;
       case ValueType.URL:
@@ -1111,7 +1111,7 @@ export class MMDecoder {
       tag = new Tag();
     }
     if (tag.type === ValueType.Unknown) {
-      tag.type = tag.size > 0 ? ValueType.Array : ValueType.Slice;
+      tag.type = tag.size > 0 ? ValueType.Arr : ValueType.Vec;
     }
 
     const [l1, l2] = containerLen(prefix & 0x1f);

@@ -83,7 +83,7 @@ public static class ReflectMmEncoder
     {
         if (value == null)
         {
-            return ValueType.STRING;
+            return ValueType.STR;
         }
 
         Type type = value.GetType();
@@ -223,23 +223,23 @@ public static class ReflectMmEncoder
                 case ValueType.BOOL:
                     encoder.EncodeSimple(SimpleValue.NULL_BOOL);
                     return;
-                case ValueType.INT:
-                case ValueType.INT8:
-                case ValueType.INT16:
-                case ValueType.INT32:
-                case ValueType.INT64:
-                case ValueType.UINT:
-                case ValueType.UINT16:
-                case ValueType.UINT32:
-                case ValueType.UINT64:
+                case ValueType.I:
+                case ValueType.I8:
+                case ValueType.I16:
+                case ValueType.I32:
+                case ValueType.I64:
+                case ValueType.U:
+                case ValueType.U16:
+                case ValueType.U32:
+                case ValueType.U64:
                     encoder.EncodeSimple(SimpleValue.NULL_INT);
                     return;
-                case ValueType.FLOAT32:
-                case ValueType.FLOAT64:
+                case ValueType.F32:
+                case ValueType.F64:
                 case ValueType.DECIMAL:
                     encoder.EncodeSimple(SimpleValue.NULL_FLOAT);
                     return;
-                case ValueType.STRING:
+                case ValueType.STR:
                 case ValueType.EMAIL:
                 case ValueType.URL:
                     encoder.EncodeSimple(SimpleValue.NULL_STRING);
@@ -258,15 +258,15 @@ public static class ReflectMmEncoder
             case ValueType.BOOL:
                 encoder.EncodeBool((bool)value!);
                 break;
-            case ValueType.INT:
-            case ValueType.INT8:
-            case ValueType.INT16:
-            case ValueType.INT32:
-            case ValueType.INT64:
-            case ValueType.UINT:
-            case ValueType.UINT16:
-            case ValueType.UINT32:
-            case ValueType.UINT64:
+            case ValueType.I:
+            case ValueType.I8:
+            case ValueType.I16:
+            case ValueType.I32:
+            case ValueType.I64:
+            case ValueType.U:
+            case ValueType.U16:
+            case ValueType.U32:
+            case ValueType.U64:
                 long longVal;
                 if (value is ulong ul)
                     longVal = unchecked((long)ul);
@@ -280,14 +280,14 @@ public static class ReflectMmEncoder
                     longVal = Convert.ToInt64(value);
                 encoder.EncodeInt64(longVal);
                 break;
-            case ValueType.FLOAT32:
+            case ValueType.F32:
                 encoder.EncodeFloatString(value!.ToString()!);
                 break;
-            case ValueType.FLOAT64:
+            case ValueType.F64:
             case ValueType.DECIMAL:
                 encoder.EncodeFloatString(value!.ToString()!);
                 break;
-            case ValueType.STRING:
+            case ValueType.STR:
             case ValueType.EMAIL:
             case ValueType.URL:
                 encoder.EncodeString(value as string ?? "");

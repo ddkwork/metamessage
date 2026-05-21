@@ -38,7 +38,7 @@ def main():
     
     # None (must provide a tag with type)
     from metamessage import Tag, ValueType, value_to_node
-    tag = Tag(type=ValueType.String, nullable=True)
+    tag = Tag(type=ValueType.Str, nullable=True)
     node = value_to_node(None, tag)
     from metamessage import Encoder, Decoder
     binary = Encoder().encode(node)

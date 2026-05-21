@@ -32,7 +32,7 @@ export class Binder {
 
     if (node instanceof MMArray) {
       const tag = node.getTag();
-      if (tag?.type === ValueType.Array) {
+      if (tag?.type === ValueType.Arr) {
         return this.convertArr(node, target);
       } else {
         return this.convertVec(node, target);
@@ -182,7 +182,7 @@ export class Binder {
       case ValueType.Float64:
         return 0.0;
 
-      case ValueType.String:
+      case ValueType.Str:
       case ValueType.Email:
       case ValueType.URL:
       case ValueType.IP:

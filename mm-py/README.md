@@ -155,7 +155,7 @@ from metamessage import Tag, ValueType, Obj, Arr, Val, Field, Encoder, Decoder
 obj = Obj(
     fields=[
         Field(key="name", value=Val(data="John", text="John",
-                                     tag=Tag(type=ValueType.String))),
+                                     tag=Tag(type=ValueType.Str))),
         Field(key="age", value=Val(data=30, text="30",
                                     tag=Tag(type=ValueType.Int))),
     ],
