@@ -21,11 +21,11 @@ class Tag(
         var nullable: Boolean = false,
         var allowEmpty: Boolean = false,
         var unique: Boolean = false,
-        var default: String = "",
+        var default_val: String = "",
         var min: String = "",
         var max: String = "",
         var size: Int = 0,
-        var enum: String = "",
+        var enums: String = "",
         var pattern: String = "",
         var location: Int = 0,
         var version: Int = DEFAULT_VERSION,
@@ -36,11 +36,11 @@ class Tag(
         var childNullable: Boolean = false,
         var childAllowEmpty: Boolean = false,
         var childUnique: Boolean = false,
-        var childDefault: String = "",
+        var childDefaultVal: String = "",
         var childMin: String = "",
         var childMax: String = "",
         var childSize: Int = 0,
-        var childEnum: String = "",
+        var childEnums: String = "",
         var childPattern: String = "",
         var childLocation: Int = 0,
         var childVersion: Int = DEFAULT_VERSION,
@@ -58,11 +58,11 @@ class Tag(
                     nullable,
                     allowEmpty,
                     unique,
-                    default,
+                    default_val,
                     min,
                     max,
                     size,
-                    enum,
+                    enums,
                     pattern,
                     location,
                     version,
@@ -73,11 +73,11 @@ class Tag(
                     childNullable,
                     childAllowEmpty,
                     childUnique,
-                    childDefault,
+                    childDefaultVal,
                     childMin,
                     childMax,
                     childSize,
-                    childEnum,
+                    childEnums,
                     childPattern,
                     childLocation,
                     childVersion,
@@ -114,8 +114,8 @@ class Tag(
             unique = parent.childUnique
         }
 
-        if (parent.childDefault.isNotEmpty()) {
-            default = parent.childDefault
+        if (parent.childDefaultVal.isNotEmpty()) {
+            default_val = parent.childDefaultVal
         }
 
         if (parent.childMin.isNotEmpty()) {
@@ -130,8 +130,8 @@ class Tag(
             size = parent.childSize
         }
 
-        if (parent.childEnum.isNotEmpty()) {
-            enum = parent.childEnum
+        if (parent.childEnums.isNotEmpty()) {
+            enums = parent.childEnums
         }
 
         if (parent.childPattern.isNotEmpty()) {
@@ -168,7 +168,7 @@ class Tag(
                             type == ValueType.VEC)
             ) {
                 if (!((type == ValueType.ARR && size > 0) ||
-                                (type == ValueType.ENUM && enum.isNotEmpty()))
+                                (type == ValueType.ENUMS && enums.isNotEmpty()))
                 ) {
                     parts.add("${T_TYPE}=${type.toString()}")
                 }
@@ -205,8 +205,8 @@ class Tag(
             parts.add(T_UNIQUE)
         }
 
-        if (default.isNotEmpty() && !isInherit) {
-            parts.add("${T_DEFAULT}=${default}")
+        if (default_val.isNotEmpty() && !isInherit) {
+            parts.add("${T_DEFAULT}=${default_val}")
         }
 
         if (min.isNotEmpty() && !isInherit) {
@@ -221,8 +221,8 @@ class Tag(
             parts.add("${T_SIZE}=${size}")
         }
 
-        if (enum.isNotEmpty() && !isInherit) {
-            parts.add("${T_ENUM}=${enum}")
+        if (enums.isNotEmpty() && !isInherit) {
+            parts.add("${T_ENUM}=${enums}")
         }
 
         if (pattern.isNotEmpty() && !isInherit) {
@@ -254,7 +254,7 @@ class Tag(
                             childType == ValueType.VEC)
             ) {
                 if (!((childType == ValueType.ARR && childSize > 0) ||
-                                (childType == ValueType.ENUM && childEnum.isNotEmpty()))
+                                (childType == ValueType.ENUMS && childEnums.isNotEmpty()))
                 ) {
                     parts.add("${T_CHILD_TYPE}=${childType.toString()}")
                 }
@@ -277,8 +277,8 @@ class Tag(
             parts.add(T_CHILD_UNIQUE)
         }
 
-        if (childDefault.isNotEmpty()) {
-            parts.add("${T_CHILD_DEFAULT}=${childDefault}")
+        if (childDefaultVal.isNotEmpty()) {
+            parts.add("${T_CHILD_DEFAULT}=${childDefaultVal}")
         }
 
         if (childMin.isNotEmpty()) {
@@ -293,8 +293,8 @@ class Tag(
             parts.add("${T_CHILD_SIZE}=${childSize}")
         }
 
-        if (childEnum.isNotEmpty()) {
-            parts.add("${T_CHILD_ENUM}=${childEnum}")
+        if (childEnums.isNotEmpty()) {
+            parts.add("${T_CHILD_ENUMS}=${childEnums}")
         }
 
         if (childPattern.isNotEmpty()) {
@@ -337,13 +337,13 @@ class Tag(
         if (raw && !isInherit) w.writeByte((TagKey.K_RAW or 1).toByte())
         if (allowEmpty && !isInherit) w.writeByte((TagKey.K_ALLOW_EMPTY or 1).toByte())
         if (unique && !isInherit) w.writeByte((TagKey.K_UNIQUE or 1).toByte())
-        if (default.isNotEmpty() && !isInherit) {
-            writeShortString(w, TagKey.K_DEFAULT, default)
+        if (default_val.isNotEmpty() && !isInherit) {
+            writeShortString(w, TagKey.K_DEFAULT_VAL, default_val)
         }
         if (min.isNotEmpty() && !isInherit) writeShortString(w, TagKey.K_MIN, min)
         if (max.isNotEmpty() && !isInherit) writeShortString(w, TagKey.K_MAX, max)
         if (size != 0 && !isInherit) encodeU64(w, TagKey.K_SIZE, size.toLong())
-        if (enum.isNotEmpty() && !isInherit) writeSizedString(w, TagKey.K_ENUM, enum)
+        if (enums.isNotEmpty() && !isInherit) writeSizedString(w, TagKey.K_ENUM, enums)
         if (pattern.isNotEmpty() && !isInherit) writeShortString(w, TagKey.K_PATTERN, pattern)
         if (location != 0 && !isInherit) {
             val v = location.toString()
@@ -372,11 +372,12 @@ class Tag(
         if (childNullable) w.writeByte((TagKey.K_CHILD_NULLABLE or 1).toByte())
         if (childAllowEmpty) w.writeByte((TagKey.K_CHILD_ALLOW_EMPTY or 1).toByte())
         if (childUnique) w.writeByte((TagKey.K_CHILD_UNIQUE or 1).toByte())
-        if (childDefault.isNotEmpty()) writeShortString(w, TagKey.K_CHILD_DEFAULT, childDefault)
+        if (childDefaultVal.isNotEmpty())
+                writeShortString(w, TagKey.K_CHILD_DEFAULT_VAL, childDefaultVal)
         if (childMin.isNotEmpty()) writeShortString(w, TagKey.K_CHILD_MIN, childMin)
         if (childMax.isNotEmpty()) writeShortString(w, TagKey.K_CHILD_MAX, childMax)
         if (childSize != 0) encodeU64(w, TagKey.K_CHILD_SIZE, childSize.toLong())
-        if (childEnum.isNotEmpty()) writeSizedString(w, TagKey.K_CHILD_ENUM, childEnum)
+        if (childEnums.isNotEmpty()) writeSizedString(w, TagKey.K_CHILD_ENUMS, childEnums)
         if (childPattern.isNotEmpty()) writeShortString(w, TagKey.K_CHILD_PATTERN, childPattern)
         if (childLocation != 0) {
             val v = childLocation.toString()
@@ -409,7 +410,7 @@ class Tag(
             ValueType.OBJ,
             ValueType.VEC -> false
             ValueType.ARR -> if (size > 0) false else true
-            ValueType.ENUM -> if (enum.isNotEmpty()) false else true
+            ValueType.ENUMS -> if (enums.isNotEmpty()) false else true
             else -> true
         }
     }
@@ -423,7 +424,7 @@ class Tag(
             ValueType.OBJ,
             ValueType.VEC -> false
             ValueType.ARR -> if (childSize > 0) false else true
-            ValueType.ENUM -> if (childEnum.isNotEmpty()) false else true
+            ValueType.ENUMS -> if (childEnums.isNotEmpty()) false else true
             else -> true
         }
     }
@@ -550,18 +551,18 @@ class Tag(
                 childVersion == other.childVersion &&
                 type == other.type &&
                 desc == other.desc &&
-                default == other.default &&
+                default_val == other.default_val &&
                 min == other.min &&
                 max == other.max &&
-                enum == other.enum &&
+                enums == other.enums &&
                 pattern == other.pattern &&
                 mime == other.mime &&
                 childType == other.childType &&
                 childDesc == other.childDesc &&
-                childDefault == other.childDefault &&
+                childDefaultVal == other.childDefaultVal &&
                 childMin == other.childMin &&
                 childMax == other.childMax &&
-                childEnum == other.childEnum &&
+                childEnums == other.childEnums &&
                 childPattern == other.childPattern &&
                 childMime == other.childMime
     }
@@ -577,11 +578,11 @@ class Tag(
                 nullable,
                 allowEmpty,
                 unique,
-                default,
+                default_val,
                 min,
                 max,
                 size,
-                enum,
+                enums,
                 pattern,
                 location,
                 version,
@@ -592,11 +593,11 @@ class Tag(
                 childNullable,
                 childAllowEmpty,
                 childUnique,
-                childDefault,
+                childDefaultVal,
                 childMin,
                 childMax,
                 childSize,
-                childEnum,
+                childEnums,
                 childPattern,
                 childLocation,
                 childVersion,
@@ -647,11 +648,11 @@ class Tag(
         const val T_NULLABLE = "nullable"
         const val T_ALLOW_EMPTY = "allow_empty"
         const val T_UNIQUE = "unique"
-        const val T_DEFAULT = "default"
+        const val T_DEFAULT = "default_val"
         const val T_MIN = "min"
         const val T_MAX = "max"
         const val T_SIZE = "size"
-        const val T_ENUM = "enum"
+        const val T_ENUM = "enums"
         const val T_PATTERN = "pattern"
         const val T_LOCATION = "location"
         const val T_VERSION = "version"
@@ -663,11 +664,11 @@ class Tag(
         const val T_CHILD_NULLABLE = "child_nullable"
         const val T_CHILD_ALLOW_EMPTY = "child_allow_empty"
         const val T_CHILD_UNIQUE = "child_unique"
-        const val T_CHILD_DEFAULT = "child_default"
+        const val T_CHILD_DEFAULT = "child_default_val"
         const val T_CHILD_MIN = "child_min"
         const val T_CHILD_MAX = "child_max"
         const val T_CHILD_SIZE = "child_size"
-        const val T_CHILD_ENUM = "child_enum"
+        const val T_CHILD_ENUMS = "child_enums"
         const val T_CHILD_PATTERN = "child_pattern"
         const val T_CHILD_LOCATION = "child_location"
         const val T_CHILD_VERSION = "child_version"
@@ -695,13 +696,13 @@ class Tag(
             t.nullable = ann.nullable
             t.allowEmpty = ann.allowEmpty
             t.unique = ann.unique
-            t.default = ann.default
+            t.default_val = ann.default_val
             t.min = ann.min
             t.max = ann.max
             t.size = ann.size
-            t.enum = ann.enum
-            if (t.enum.isNotEmpty()) {
-                t.type = ValueType.ENUM
+            t.enums = ann.enums
+            if (t.enums.isNotEmpty()) {
+                t.type = ValueType.ENUMS
             }
             t.pattern = ann.pattern
             t.location = ann.location
@@ -713,13 +714,13 @@ class Tag(
             t.childNullable = ann.childNullable
             t.childAllowEmpty = ann.childAllowEmpty
             t.childUnique = ann.childUnique
-            t.childDefault = ann.childDefault
+            t.childDefaultVal = ann.childDefault
             t.childMin = ann.childMin
             t.childMax = ann.childMax
             t.childSize = ann.childSize
-            t.childEnum = ann.childEnum
-            if (t.childEnum.isNotEmpty()) {
-                t.childType = ValueType.ENUM
+            t.childEnums = ann.childEnum
+            if (t.childEnums.isNotEmpty()) {
+                t.childType = ValueType.ENUMS
             }
             t.childPattern = ann.childPattern
             t.childLocation = ann.childLocation
@@ -739,11 +740,11 @@ class Tag(
             if (src.nullable) dst.nullable = true
             if (src.allowEmpty) dst.allowEmpty = true
             if (src.unique) dst.unique = true
-            if (src.default.isNotEmpty()) dst.default = src.default
+            if (src.default_val.isNotEmpty()) dst.default_val = src.default_val
             if (src.min.isNotEmpty()) dst.min = src.min
             if (src.max.isNotEmpty()) dst.max = src.max
             if (src.size != 0) dst.size = src.size
-            if (src.enum.isNotEmpty()) dst.enum = src.enum
+            if (src.enums.isNotEmpty()) dst.enums = src.enums
             if (src.pattern.isNotEmpty()) dst.pattern = src.pattern
             if (src.location != 0) dst.location = src.location
             if (src.version != DEFAULT_VERSION) dst.version = src.version
@@ -755,11 +756,11 @@ class Tag(
             if (src.childNullable) dst.childNullable = true
             if (src.childAllowEmpty) dst.childAllowEmpty = true
             if (src.childUnique) dst.childUnique = true
-            if (src.childDefault.isNotEmpty()) dst.childDefault = src.childDefault
+            if (src.childDefaultVal.isNotEmpty()) dst.childDefaultVal = src.childDefaultVal
             if (src.childMin.isNotEmpty()) dst.childMin = src.childMin
             if (src.childMax.isNotEmpty()) dst.childMax = src.childMax
             if (src.childSize != 0) dst.childSize = src.childSize
-            if (src.childEnum.isNotEmpty()) dst.childEnum = src.childEnum
+            if (src.childEnums.isNotEmpty()) dst.childEnums = src.childEnums
             if (src.childPattern.isNotEmpty()) dst.childPattern = src.childPattern
             if (src.childLocation != 0) dst.childLocation = src.childLocation
             if (src.childVersion != DEFAULT_VERSION) dst.childVersion = src.childVersion
@@ -809,7 +810,7 @@ class Tag(
                     T_NULLABLE -> r.nullable = true
                     T_ALLOW_EMPTY -> r.allowEmpty = true
                     T_UNIQUE -> r.unique = true
-                    T_DEFAULT -> r.default = value
+                    T_DEFAULT -> r.default_val = value
                     T_MIN -> r.min = value
                     T_MAX -> r.max = value
                     T_SIZE -> {
@@ -819,8 +820,8 @@ class Tag(
                         }
                     }
                     T_ENUM -> {
-                        r.type = ValueType.ENUM
-                        r.enum = value
+                        r.type = ValueType.ENUMS
+                        r.enums = value
                     }
                     T_PATTERN -> r.pattern = value
                     T_LOCATION -> {
@@ -842,7 +843,7 @@ class Tag(
                     T_CHILD_NULLABLE -> r.childNullable = true
                     T_CHILD_ALLOW_EMPTY -> r.childAllowEmpty = true
                     T_CHILD_UNIQUE -> r.childUnique = true
-                    T_CHILD_DEFAULT -> r.childDefault = value
+                    T_CHILD_DEFAULT -> r.childDefaultVal = value
                     T_CHILD_MIN -> r.childMin = value
                     T_CHILD_MAX -> r.childMax = value
                     T_CHILD_SIZE -> {
@@ -851,9 +852,9 @@ class Tag(
                             r.childSize = u.toInt()
                         }
                     }
-                    T_CHILD_ENUM -> {
-                        r.childType = ValueType.ENUM
-                        r.childEnum = value
+                    T_CHILD_ENUMS -> {
+                        r.childType = ValueType.ENUMS
+                        r.childEnums = value
                     }
                     T_CHILD_PATTERN -> r.childPattern = value
                     T_CHILD_LOCATION -> {
@@ -1980,17 +1981,17 @@ class Tag(
             return ValidationResult(false, "type enum not allow empty value \"\"")
         }
 
-        val enums = enum.split("|")
+        val enumValues = enums.split("|")
         var idx = -1
-        for (i in enums.indices) {
-            if (enums[i].trim() == value) {
+        for (i in enumValues.indices) {
+            if (enumValues[i].trim() == value) {
                 idx = i
                 break
             }
         }
 
         if (idx == -1) {
-            return ValidationResult(false, "value '$value' not found in enum: $enums")
+            return ValidationResult(false, "value '$value' not found in enums: $enums")
         }
 
         if (desc.length > 65535) {
@@ -2060,7 +2061,7 @@ class Tag(
         const val K_NULLABLE = 5 shl 3
         const val K_ALLOW_EMPTY = 6 shl 3
         const val K_UNIQUE = 7 shl 3
-        const val K_DEFAULT = 8 shl 3
+        const val K_DEFAULT_VAL = 8 shl 3
         const val K_MIN = 9 shl 3
         const val K_MAX = 10 shl 3
         const val K_SIZE = 11 shl 3
@@ -2075,11 +2076,11 @@ class Tag(
         const val K_CHILD_NULLABLE = 20 shl 3
         const val K_CHILD_ALLOW_EMPTY = 21 shl 3
         const val K_CHILD_UNIQUE = 22 shl 3
-        const val K_CHILD_DEFAULT = 23 shl 3
+        const val K_CHILD_DEFAULT_VAL = 23 shl 3
         const val K_CHILD_MIN = 24 shl 3
         const val K_CHILD_MAX = 25 shl 3
         const val K_CHILD_SIZE = 26 shl 3
-        const val K_CHILD_ENUM = 27 shl 3
+        const val K_CHILD_ENUMS = 27 shl 3
         const val K_CHILD_PATTERN = 28 shl 3
         const val K_CHILD_LOCATION = 29 shl 3
         const val K_CHILD_VERSION = 30 shl 3

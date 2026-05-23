@@ -291,8 +291,8 @@ function valueToNode(v: any, tag: Tag, depth: number, path: string): Node {
           text = result.text || '';
           break;
         }
-        case ValueType.Enum: {
-          if (!tag.enum) {
+        case ValueType.Enums: {
+          if (!tag.enums) {
             throw new Error('enum empty');
           }
           const result = tag.validateEnum(v);

@@ -469,16 +469,16 @@ def _get_tag_str(tag) -> str:
         parts.append("allow_empty")
     if tag.unique:
         parts.append("unique")
-    if tag.default:
-        parts.append(f"default={tag.default}")
+    if tag.default_val:
+        parts.append(f"default_val={tag.default_val}")
     if tag.min:
         parts.append(f"min={tag.min}")
     if tag.max:
         parts.append(f"max={tag.max}")
     if tag.size:
         parts.append(f"size={tag.size}")
-    if tag.enum:
-        parts.append(f"enum={tag.enum}")
+    if tag.enums:
+        parts.append(f"enums={tag.enums}")
     if tag.pattern:
         parts.append(f"pattern={tag.pattern}")
     if tag.version:
@@ -498,16 +498,16 @@ def _get_tag_str(tag) -> str:
         parts.append("child_allow_empty")
     if tag.child_unique:
         parts.append("child_unique")
-    if tag.child_default:
-        parts.append(f"child_default={tag.child_default}")
+    if tag.child_default_val:
+        parts.append(f"child_default_val={tag.child_default_val}")
     if tag.child_min:
         parts.append(f"child_min={tag.child_min}")
     if tag.child_max:
         parts.append(f"child_max={tag.child_max}")
     if tag.child_size:
         parts.append(f"child_size={tag.child_size}")
-    if tag.child_enum:
-        parts.append(f"child_enum={tag.child_enum}")
+    if tag.child_enums:
+        parts.append(f"child_enums={tag.child_enums}")
     if tag.child_pattern:
         parts.append(f"child_pattern={tag.child_pattern}")
     if tag.child_version:
@@ -537,7 +537,7 @@ def write_value_jsonc(b: list, v) -> None:
         if val_type in (ValueType.Str, ValueType.Bytes, ValueType.Datetime,
                         ValueType.Date, ValueType.Time, ValueType.Uuid,
                         ValueType.Ip, ValueType.Url, ValueType.Email,
-                        ValueType.Enum, ValueType.Decimal):
+                        ValueType.Enums, ValueType.Decimal):
             b.append('""')
         elif val_type in (ValueType.I, ValueType.I8, ValueType.I16, ValueType.I32, ValueType.I64,
                           ValueType.U, ValueType.U8, ValueType.U16, ValueType.U32, ValueType.U64,
@@ -554,7 +554,7 @@ def write_value_jsonc(b: list, v) -> None:
     if val_type in (ValueType.Str, ValueType.Bytes, ValueType.Datetime,
                     ValueType.Date, ValueType.Time, ValueType.Uuid,
                     ValueType.Ip, ValueType.Url, ValueType.Email,
-                    ValueType.Enum):
+                    ValueType.Enums):
         b.append(json.dumps(v.text))
     elif val_type in (ValueType.I, ValueType.I8, ValueType.I16, ValueType.I32, ValueType.I64,
                       ValueType.U, ValueType.U8, ValueType.U16, ValueType.U32, ValueType.U64,

@@ -249,7 +249,7 @@ class WireDecoder
                 $tag->unique = true;
                 return 1;
 
-            case Tag::K_DEFAULT:
+            case Tag::K_DEFAULT_VAL:
                 $n = 1;
                 if ($remain < 7) {
                     $default = '';
@@ -322,9 +322,9 @@ class WireDecoder
                 $tag->size = $size;
                 return $n;
 
-            case Tag::K_ENUM:
+            case Tag::K_ENUMS:
                 $n = 1;
-                $tag->type = ValueType::ENUM;
+                $tag->type = ValueType::ENUMS;
                 if ($remain <= 5) {
                     $enum = '';
                     for ($i = 0; $i < $remain; $i++) {
@@ -459,24 +459,24 @@ class WireDecoder
                 $tag->childUnique = true;
                 return 1;
 
-            case Tag::K_CHILD_DEFAULT:
+            case Tag::K_CHILD_DEFAULT_VAL:
                 $n = 1;
                 if ($remain < 7) {
-                    $childDefault = '';
+                    $childDefaultVal = '';
                     for ($i = 0; $i < $remain; $i++) {
-                        $childDefault .= chr($this->readByte());
+                        $childDefaultVal .=  chr($this->readByte());
                         $n++;
                     }
-                    $tag->childDefault = $childDefault;
+                    $tag->childDefaultVal = $childDefaultVal;
                 } else {
                     $l = $this->readByte();
                     $n++;
-                    $childDefault = '';
+                    $childDefaultVal = '';
                     for ($i = 0; $i < $l; $i++) {
-                        $childDefault .= chr($this->readByte());
+                        $childDefaultVal .=  chr($this->readByte());
                         $n++;
                     }
-                    $tag->childDefault = $childDefault;
+                    $tag->childDefaultVal = $childDefaultVal;
                 }
                 return $n;
 
@@ -532,36 +532,36 @@ class WireDecoder
                 $tag->childSize = $childSize;
                 return $n;
 
-            case Tag::K_CHILD_ENUM:
+            case Tag::K_CHILD_ENUMS:
                 $n = 1;
-                $tag->childType = ValueType::ENUM;
+                $tag->childType = ValueType::ENUMS;
                 if ($remain <= 5) {
-                    $childEnum = '';
+                    $childEnums = '';
                     for ($i = 0; $i < $remain; $i++) {
-                        $childEnum .= chr($this->readByte());
+                        $childEnums .= chr($this->readByte());
                         $n++;
                     }
-                    $tag->childEnum = $childEnum;
+                    $tag->childEnums = $childEnums;
                 } elseif ($remain === 6) {
                     $l = $this->readByte();
                     $n++;
-                    $childEnum = '';
+                    $childEnums = '';
                     for ($i = 0; $i < $l; $i++) {
-                        $childEnum .= chr($this->readByte());
+                        $childEnums .= chr($this->readByte());
                         $n++;
                     }
-                    $tag->childEnum = $childEnum;
+                    $tag->childEnums = $childEnums;
                 } elseif ($remain === 7) {
                     $lh = $this->readByte();
                     $ll = $this->readByte();
                     $l = ($lh << 8) | $ll;
                     $n += 2;
-                    $childEnum = '';
+                    $childEnums = '';
                     for ($i = 0; $i < $l; $i++) {
-                        $childEnum .= chr($this->readByte());
+                        $childEnums .= chr($this->readByte());
                         $n++;
                     }
-                    $tag->childEnum = $childEnum;
+                    $tag->childEnums = $childEnums;
                 }
                 return $n;
 
@@ -814,7 +814,7 @@ class WireDecoder
                     $text = $dt->format('H:i:s');
                 }
                 break;
-            case ValueType::ENUM:
+            case ValueType::ENUMS:
                 if ($tag->isNull) {
                     $data = -1;
                     $text = '';

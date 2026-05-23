@@ -220,13 +220,13 @@ export class JSONCParser {
               }
               break;
 
-            case ValueType.Enum:
-              if (!strTag.enum) {
+            case ValueType.Enums:
+              if (!strTag.enums) {
                 throw new Error('enum empty');
               }
               if (strTag.isNull) {
                 if (text !== '') {
-                  throw new Error(`invalid enum: "${text}", valid: ""`);
+                  throw new Error(`invalid enums: "${text}", valid: ""`);
                 }
                 data = -1;
               } else {
@@ -772,8 +772,8 @@ export class JSONCParser {
     if (a.isNull) {
       b.isNull = true;
     }
-    if (a.default) {
-      b.default = a.default;
+    if (a.default_val) {
+      b.default_val = a.default_val;
     }
     if (a.min) {
       b.min = a.min;
@@ -784,8 +784,8 @@ export class JSONCParser {
     if (a.size !== 0n) {
       b.size = a.size;
     }
-    if (a.enum) {
-      b.enum = a.enum;
+    if (a.enums) {
+      b.enums = a.enums;
     }
     if (a.pattern) {
       b.pattern = a.pattern;

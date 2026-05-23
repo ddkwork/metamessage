@@ -332,14 +332,14 @@ func (p *Parser) parse(path string) (val ir.Node, err error) {
 					}
 
 				case ir.ValueTypeEnum:
-					if tag.Enum == "" {
+					if tag.Enums == "" {
 						err = fmt.Errorf("enum empty")
 						return
 					}
 
 					if tag.IsNull {
 						if text != "" {
-							return nil, fmt.Errorf("invalid enum: %q, valid: %q", text, "")
+							return nil, fmt.Errorf("invalid enums: %q, valid: %q", text, "")
 						}
 
 						data = -1

@@ -34,11 +34,11 @@ class Tag
     public bool $childNullable = false;
     public bool $childAllowEmpty = false;
     public bool $childUnique = false;
-    public string $childDefault = '';
+    public string $childDefaultVal = '';
     public string $childMin = '';
     public string $childMax = '';
     public int $childSize = 0;
-    public string $childEnum = '';
+    public string $childEnums = '';
     public string $childPattern = '';
     public int $childLocationHours = 0;
     public int $childVersion = self::DEFAULT_VERSION;
@@ -62,7 +62,7 @@ class Tag
     const T_MIN = 'min';
     const T_MAX = 'max';
     const T_SIZE = 'size';
-    const T_ENUM = 'enum';
+    const T_ENUMS = 'enums';
     const T_PATTERN = 'pattern';
     const T_LOCATION = 'location';
     const T_VERSION = 'version';
@@ -74,11 +74,11 @@ class Tag
     const T_CHILD_NULLABLE = 'child_nullable';
     const T_CHILD_ALLOW_EMPTY = 'child_allow_empty';
     const T_CHILD_UNIQUE = 'child_unique';
-    const T_CHILD_DEFAULT = 'child_default';
+    const T_CHILD_DEFAULT = 'child_default_val';
     const T_CHILD_MIN = 'child_min';
     const T_CHILD_MAX = 'child_max';
     const T_CHILD_SIZE = 'child_size';
-    const T_CHILD_ENUM = 'child_enum';
+    const T_CHILD_ENUMS = 'child_enums';
     const T_CHILD_PATTERN = 'child_pattern';
     const T_CHILD_LOCATION = 'child_location';
     const T_CHILD_VERSION = 'child_version';
@@ -92,11 +92,11 @@ class Tag
     const K_NULLABLE = 5 << 3;
     const K_ALLOW_EMPTY = 6 << 3;
     const K_UNIQUE = 7 << 3;
-    const K_DEFAULT = 8 << 3;
+    const K_DEFAULT_VAL = 8 << 3;
     const K_MIN = 9 << 3;
     const K_MAX = 10 << 3;
     const K_SIZE = 11 << 3;
-    const K_ENUM = 12 << 3;
+    const K_ENUMS = 12 << 3;
     const K_PATTERN = 13 << 3;
     const K_LOCATION = 14 << 3;
     const K_VERSION = 15 << 3;
@@ -107,11 +107,11 @@ class Tag
     const K_CHILD_NULLABLE = 20 << 3;
     const K_CHILD_ALLOW_EMPTY = 21 << 3;
     const K_CHILD_UNIQUE = 22 << 3;
-    const K_CHILD_DEFAULT = 23 << 3;
+    const K_CHILD_DEFAULT_VAL = 23 << 3;
     const K_CHILD_MIN = 24 << 3;
     const K_CHILD_MAX = 25 << 3;
     const K_CHILD_SIZE = 26 << 3;
-    const K_CHILD_ENUM = 27 << 3;
+    const K_CHILD_ENUMS = 27 << 3;
     const K_CHILD_PATTERN = 28 << 3;
     const K_CHILD_LOCATION = 29 << 3;
     const K_CHILD_VERSION = 30 << 3;
@@ -170,7 +170,7 @@ class Tag
         $t->size = $ann->size;
         $t->enumValues = $ann->enumValues;
         if (!empty($t->enumValues)) {
-            $t->type = ValueType::ENUM;
+            $t->type = ValueType::ENUMS;
         }
         $t->pattern = $ann->pattern;
         $t->locationHours = $ann->location;
@@ -182,13 +182,13 @@ class Tag
         $t->childNullable = $ann->childNullable;
         $t->childAllowEmpty = $ann->childAllowEmpty;
         $t->childUnique = $ann->childUnique;
-        $t->childDefault = $ann->childDefault;
+        $t->childDefaultVal = $ann->childDefaultVal;
         $t->childMin = $ann->childMin;
         $t->childMax = $ann->childMax;
         $t->childSize = $ann->childSize;
-        $t->childEnum = $ann->childEnum;
-        if (!empty($t->childEnum)) {
-            $t->childType = ValueType::ENUM;
+        $t->childEnums = $ann->childEnums;
+        if (!empty($t->childEnums)) {
+            $t->childType = ValueType::ENUMS;
         }
         $t->childPattern = $ann->childPattern;
         $t->childLocationHours = $ann->childLocation;
@@ -224,11 +224,11 @@ class Tag
         $copy->childNullable = $this->childNullable;
         $copy->childAllowEmpty = $this->childAllowEmpty;
         $copy->childUnique = $this->childUnique;
-        $copy->childDefault = $this->childDefault;
+        $copy->childDefaultVal = $this->childDefaultVal;
         $copy->childMin = $this->childMin;
         $copy->childMax = $this->childMax;
         $copy->childSize = $this->childSize;
-        $copy->childEnum = $this->childEnum;
+        $copy->childEnums = $this->childEnums;
         $copy->childPattern = $this->childPattern;
         $copy->childLocationHours = $this->childLocationHours;
         $copy->childVersion = $this->childVersion;
@@ -248,11 +248,11 @@ class Tag
         $this->nullable = $parent->childNullable;
         $this->allowEmpty = $parent->childAllowEmpty;
         $this->unique = $parent->childUnique;
-        $this->defaultValue = $parent->childDefault;
+        $this->defaultValue = $parent->childDefaultVal;
         $this->min = $parent->childMin;
         $this->max = $parent->childMax;
         $this->size = $parent->childSize;
-        $this->enumValues = $parent->childEnum;
+        $this->enumValues = $parent->childEnums;
         $this->pattern = $parent->childPattern;
         $this->locationHours = $parent->childLocationHours;
         $this->version = $parent->childVersion;
@@ -293,8 +293,8 @@ class Tag
             $this->unique = $tag->childUnique;
         }
 
-        if ($tag->childDefault !== '') {
-            $this->defaultValue = $tag->childDefault;
+        if ($tag->childDefaultVal !== '') {
+            $this->defaultValue = $tag->childDefaultVal;
         }
 
         if ($tag->childMin !== '') {
@@ -309,8 +309,8 @@ class Tag
             $this->size = $tag->childSize;
         }
 
-        if ($tag->childEnum !== '') {
-            $this->enumValues = $tag->childEnum;
+        if ($tag->childEnums !== '') {
+            $this->enumValues = $tag->childEnums;
         }
 
         if ($tag->childPattern !== '') {
@@ -367,7 +367,7 @@ class Tag
             } else {
                 if (
                     $this->type === ValueType::ARR && $this->size > 0 ||
-                    $this->type === ValueType::ENUM && $this->enumValues !== ''
+                    $this->type === ValueType::ENUMS && $this->enumValues !== ''
                 ) {
                 } else {
                     $add(self::T_TYPE . '=' . $this->type->wireName());
@@ -422,7 +422,7 @@ class Tag
         }
 
         if ($this->enumValues !== '' && !$this->isInherit) {
-            $add(self::T_ENUM . '=' . $this->enumValues);
+            $add(self::T_ENUMS . '=' . $this->enumValues);
         }
 
         if ($this->pattern !== '' && !$this->isInherit) {
@@ -457,7 +457,7 @@ class Tag
             } else {
                 if (
                     $this->childType === ValueType::ARR && $this->childSize > 0 ||
-                    $this->childType === ValueType::ENUM && $this->childEnum !== ''
+                    $this->childType === ValueType::ENUMS && $this->childEnums !== ''
                 ) {
                 } else {
                     $add(self::T_CHILD_TYPE . '=' . $this->childType->wireName());
@@ -481,8 +481,8 @@ class Tag
             $add(self::T_CHILD_UNIQUE);
         }
 
-        if ($this->childDefault !== '') {
-            $add(self::T_CHILD_DEFAULT . '=' . $this->childDefault);
+        if ($this->childDefaultVal !== '') {
+            $add(self::T_CHILD_DEFAULT . '=' . $this->childDefaultVal);
         }
 
         if ($this->childMin !== '') {
@@ -497,8 +497,8 @@ class Tag
             $add(self::T_CHILD_SIZE . '=' . $this->childSize);
         }
 
-        if ($this->childEnum !== '') {
-            $add(self::T_CHILD_ENUM . '=' . $this->childEnum);
+        if ($this->childEnums !== '') {
+            $add(self::T_CHILD_ENUMS . '=' . $this->childEnums);
         }
 
         if ($this->childPattern !== '') {
@@ -568,7 +568,7 @@ class Tag
             } else {
                 if (
                     $this->type === ValueType::ARR && $this->size > 0 ||
-                    $this->type === ValueType::ENUM && $this->enumValues !== ''
+                    $this->type === ValueType::ENUMS && $this->enumValues !== ''
                 ) {
                 } else {
                     $w->writeByte(self::K_TYPE);
@@ -592,10 +592,10 @@ class Tag
         if ($this->defaultValue !== '' && !$this->isInherit) {
             $l = strlen($this->defaultValue);
             if ($l < 7) {
-                $w->writeByte(self::K_DEFAULT | $l);
+                $w->writeByte(self::K_DEFAULT_VAL | $l);
                 $w->writeAscii($this->defaultValue);
             } else {
-                $w->writeByte(self::K_DEFAULT | 7);
+                $w->writeByte(self::K_DEFAULT_VAL | 7);
                 $w->writeByte($l);
                 $w->writeAscii($this->defaultValue);
             }
@@ -632,14 +632,14 @@ class Tag
         if ($this->enumValues !== '' && !$this->isInherit) {
             $l = strlen($this->enumValues);
             if ($l <= 5) {
-                $w->writeByte(self::K_ENUM | $l);
+                $w->writeByte(self::K_ENUMS | $l);
                 $w->writeAscii($this->enumValues);
             } elseif ($l <= 0xFF) {
-                $w->writeByte(self::K_ENUM | 6);
+                $w->writeByte(self::K_ENUMS | 6);
                 $w->writeByte($l);
                 $w->writeAscii($this->enumValues);
             } elseif ($l <= 0xFFFF) {
-                $w->writeByte(self::K_ENUM | 7);
+                $w->writeByte(self::K_ENUMS | 7);
                 $w->writeByte(($l >> 8) & 0xFF);
                 $w->writeByte($l & 0xFF);
                 $w->writeAscii($this->enumValues);
@@ -707,7 +707,7 @@ class Tag
             } else {
                 if (
                     $this->childType === ValueType::ARR && $this->childSize > 0 ||
-                    $this->childType === ValueType::ENUM && $this->childEnum !== ''
+                    $this->childType === ValueType::ENUMS && $this->childEnums !== ''
                 ) {
                 } else {
                     $w->writeByte(self::K_CHILD_TYPE);
@@ -732,15 +732,15 @@ class Tag
             $w->writeByte(self::K_CHILD_UNIQUE | 1);
         }
 
-        if ($this->childDefault !== '') {
-            $l = strlen($this->childDefault);
+        if ($this->childDefaultVal !== '') {
+            $l = strlen($this->childDefaultVal);
             if ($l < 7) {
-                $w->writeByte(self::K_CHILD_DEFAULT | $l);
-                $w->writeAscii($this->childDefault);
+                $w->writeByte(self::K_CHILD_DEFAULT_VAL | $l);
+                $w->writeAscii($this->childDefaultVal);
             } else {
-                $w->writeByte(self::K_CHILD_DEFAULT | 7);
+                $w->writeByte(self::K_CHILD_DEFAULT_VAL | 7);
                 $w->writeByte($l);
-                $w->writeAscii($this->childDefault);
+                $w->writeAscii($this->childDefaultVal);
             }
         }
 
@@ -772,20 +772,20 @@ class Tag
             self::encodeU64Static($w, self::K_CHILD_SIZE, $this->childSize);
         }
 
-        if ($this->childEnum !== '') {
-            $l = strlen($this->childEnum);
+        if ($this->childEnums !== '') {
+            $l = strlen($this->childEnums);
             if ($l <= 5) {
-                $w->writeByte(self::K_CHILD_ENUM | $l);
-                $w->writeAscii($this->childEnum);
+                $w->writeByte(self::K_CHILD_ENUMS | $l);
+                $w->writeAscii($this->childEnums);
             } elseif ($l <= 0xFF) {
-                $w->writeByte(self::K_CHILD_ENUM | 6);
+                $w->writeByte(self::K_CHILD_ENUMS | 6);
                 $w->writeByte($l);
-                $w->writeAscii($this->childEnum);
+                $w->writeAscii($this->childEnums);
             } elseif ($l <= 0xFFFF) {
-                $w->writeByte(self::K_CHILD_ENUM | 7);
+                $w->writeByte(self::K_CHILD_ENUMS | 7);
                 $w->writeByte(($l >> 8) & 0xFF);
                 $w->writeByte($l & 0xFF);
-                $w->writeAscii($this->childEnum);
+                $w->writeAscii($this->childEnums);
             }
         }
 
@@ -996,8 +996,8 @@ class Tag
             $dst->childUnique = true;
         }
 
-        if ($src->childDefault !== '') {
-            $dst->childDefault = $src->childDefault;
+        if ($src->childDefaultVal !== '') {
+            $dst->childDefaultVal = $src->childDefaultVal;
         }
 
         if ($src->childMin !== '') {
@@ -1012,8 +1012,8 @@ class Tag
             $dst->childSize = $src->childSize;
         }
 
-        if ($src->childEnum !== '') {
-            $dst->childEnum = $src->childEnum;
+        if ($src->childEnums !== '') {
+            $dst->childEnums = $src->childEnums;
         }
 
         if ($src->childPattern !== '') {
@@ -1133,8 +1133,8 @@ class Tag
                     $r->size = (int)$v;
                     break;
 
-                case self::T_ENUM:
-                    $r->type = ValueType::ENUM;
+                case self::T_ENUMS:
+                    $r->type = ValueType::ENUMS;
                     $r->enumValues = $v;
                     break;
 
@@ -1175,7 +1175,7 @@ class Tag
                     break;
 
                 case self::T_CHILD_DEFAULT:
-                    $r->childDefault = $v;
+                    $r->childDefaultVal = $v;
                     break;
 
                 case self::T_CHILD_PATTERN:
@@ -1194,9 +1194,9 @@ class Tag
                     $r->childSize = (int)$v;
                     break;
 
-                case self::T_CHILD_ENUM:
-                    $r->childEnum = $v;
-                    $r->childType = ValueType::ENUM;
+                case self::T_CHILD_ENUMS:
+                    $r->childEnums = $v;
+                    $r->childType = ValueType::ENUMS;
                     break;
 
                 case self::T_CHILD_LOCATION:

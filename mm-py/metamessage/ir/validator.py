@@ -920,10 +920,10 @@ class MmValidator:
                 return ValidationResult(False, "type enum not allow empty value \"\"")
             return ValidationResult(True, data=-1, text=value)
 
-        if not tag.enum:
+        if not tag.enums:
             return ValidationResult(False, "enum not defined")
 
-        enums = tag.enum.split('|')
+        enums = tag.enums.split('|')
         idx = -1
         for i, val in enumerate(enums):
             if val.strip() == value:
@@ -931,7 +931,7 @@ class MmValidator:
                 break
 
         if idx == -1:
-            return ValidationResult(False, "value '%s' not found in enum: %s" % (value, enums))
+            return ValidationResult(False, "value '%s' not found in enums: %s" % (value, enums))
 
         if len(tag.desc) > 65535:
             return ValidationResult(False, "desc length exceeds 65535 bytes")
@@ -1116,7 +1116,7 @@ class MmValidator:
                 return MmValidator.validate_email(value, tag)
             else:
                 return ValidationResult(False, "expected string, got %s" % type(value).__name__)
-        elif tag.type == ValueType.Enum:
+        elif tag.type == ValueType.Enums:
             if isinstance(value, str):
                 return MmValidator.validate_enum(value, tag)
             else:

@@ -237,22 +237,22 @@ private fun valueToNode(v: Any?, tag: Tag?, depth: Int, path: String): Node {
                     data = result.data
                     text = result.text ?: Null
                 }
-                ValueType.ENUM -> {
+                ValueType.ENUMS -> {
                     val result = workTag.validateEnum(v)
                     data = result.data
                     text = result.text ?: Null
                 }
-                ValueType.Uuid -> {
+                ValueType.UUID -> {
                     val result = workTag.validateUUID(v)
                     data = result.data
                     text = result.text ?: Null
                 }
-                ValueType.Url -> {
+                ValueType.URL -> {
                     val result = workTag.validateURL(v)
                     data = result.data
                     text = result.text ?: Null
                 }
-                ValueType.Ip -> {
+                ValueType.IP -> {
                     val result = workTag.validateIP(v)
                     data = result.data
                     text = result.text ?: Null
@@ -281,10 +281,10 @@ private fun valueToNode(v: Any?, tag: Tag?, depth: Int, path: String): Node {
         }
         is UUID -> {
             if (workTag.type == ValueType.UNKNOWN) {
-                workTag.type = ValueType.Uuid
+                workTag.type = ValueType.UUID
             }
             when (workTag.type) {
-                ValueType.Uuid -> {
+                ValueType.UUID -> {
                     val result = workTag.validateUUID(v.toString())
                     data = result.data
                     text = result.text ?: Null
@@ -297,10 +297,10 @@ private fun valueToNode(v: Any?, tag: Tag?, depth: Int, path: String): Node {
         }
         is InetAddress -> {
             if (workTag.type == ValueType.UNKNOWN) {
-                workTag.type = ValueType.Ip
+                workTag.type = ValueType.IP
             }
             when (workTag.type) {
-                ValueType.Ip -> {
+                ValueType.IP -> {
                     val result = workTag.validateIP(v.hostAddress ?: "")
                     data = result.data
                     text = result.text ?: Null
@@ -313,10 +313,10 @@ private fun valueToNode(v: Any?, tag: Tag?, depth: Int, path: String): Node {
         }
         is URI -> {
             if (workTag.type == ValueType.UNKNOWN) {
-                workTag.type = ValueType.Url
+                workTag.type = ValueType.URL
             }
             when (workTag.type) {
-                ValueType.Url -> {
+                ValueType.URL -> {
                     val result = workTag.validateURL(v.toString())
                     data = result.data
                     text = result.text ?: Null
@@ -549,11 +549,11 @@ private fun convertVec(list: List<*>, tag: Tag, depth: Int, path: String): Node 
                 childNullable = resultTag.nullable
                 childAllowEmpty = resultTag.allowEmpty
                 childUnique = resultTag.unique
-                childDefault = resultTag.default
+                childDefaultVal = resultTag.default_val
                 childMin = resultTag.min
                 childMax = resultTag.max
                 childSize = resultTag.size
-                childEnum = resultTag.enum
+                childEnums = resultTag.enums
                 childPattern = resultTag.pattern
                 childLocation = resultTag.location
                 childVersion = resultTag.version
@@ -583,16 +583,17 @@ private fun convertVec(list: List<*>, tag: Tag, depth: Int, path: String): Node 
                 childNullable = resultTag.nullable
                 childAllowEmpty = resultTag.allowEmpty
                 childUnique = resultTag.unique
-                childDefault = resultTag.default
+                childDefaultVal = resultTag.default_val
                 childMin = resultTag.min
                 childMax = resultTag.max
                 childSize = resultTag.size
-                childEnum = resultTag.enum
+                childEnums = resultTag.enums
                 childPattern = resultTag.pattern
                 childLocation = resultTag.location
                 childVersion = resultTag.version
                 childMime = resultTag.mime
             }
+            setTag = true
         }
 
         node.items.add(itemNode)
@@ -629,11 +630,11 @@ private fun convertMap(map: Map<*, *>, tag: Tag, depth: Int, path: String): Node
                 childNullable = resultTag.nullable
                 childAllowEmpty = resultTag.allowEmpty
                 childUnique = resultTag.unique
-                childDefault = resultTag.default
+                childDefaultVal = resultTag.default_val
                 childMin = resultTag.min
                 childMax = resultTag.max
                 childSize = resultTag.size
-                childEnum = resultTag.enum
+                childEnums = resultTag.enums
                 childPattern = resultTag.pattern
                 childLocation = resultTag.location
                 childVersion = resultTag.version
@@ -664,11 +665,11 @@ private fun convertMap(map: Map<*, *>, tag: Tag, depth: Int, path: String): Node
                 childNullable = resultTag.nullable
                 childAllowEmpty = resultTag.allowEmpty
                 childUnique = resultTag.unique
-                childDefault = resultTag.default
+                childDefaultVal = resultTag.default_val
                 childMin = resultTag.min
                 childMax = resultTag.max
                 childSize = resultTag.size
-                childEnum = resultTag.enum
+                childEnums = resultTag.enums
                 childPattern = resultTag.pattern
                 childLocation = resultTag.location
                 childVersion = resultTag.version
@@ -720,8 +721,8 @@ private fun mergeTag(dst: Tag, src: Tag) {
         dst.unique = true
     }
 
-    if (src.default.isNotEmpty()) {
-        dst.default = src.default
+    if (src.default_val.isNotEmpty()) {
+        dst.default_val = src.default_val
     }
 
     if (src.min.isNotEmpty()) {
@@ -736,8 +737,8 @@ private fun mergeTag(dst: Tag, src: Tag) {
         dst.size = src.size
     }
 
-    if (src.enum.isNotEmpty()) {
-        dst.enum = src.enum
+    if (src.enums.isNotEmpty()) {
+        dst.enums = src.enums
     }
 
     if (src.pattern.isNotEmpty()) {
@@ -780,8 +781,8 @@ private fun mergeTag(dst: Tag, src: Tag) {
         dst.childUnique = true
     }
 
-    if (src.childDefault.isNotEmpty()) {
-        dst.childDefault = src.childDefault
+    if (src.childDefaultVal.isNotEmpty()) {
+        dst.childDefaultVal = src.childDefaultVal
     }
 
     if (src.childMin.isNotEmpty()) {
@@ -796,8 +797,8 @@ private fun mergeTag(dst: Tag, src: Tag) {
         dst.childSize = src.childSize
     }
 
-    if (src.childEnum.isNotEmpty()) {
-        dst.childEnum = src.childEnum
+    if (src.childEnums.isNotEmpty()) {
+        dst.childEnums = src.childEnums
     }
 
     if (src.childPattern.isNotEmpty()) {
@@ -827,15 +828,15 @@ private fun createExampleValue(type: ValueType): Any? {
         ValueType.U64 -> BigInteger.ZERO
         ValueType.F32 -> 0.0f
         ValueType.F64 -> 0.0
-        ValueType.STR, ValueType.DECIMAL, ValueType.EMAIL, ValueType.Url, ValueType.Ip -> ""
+        ValueType.STR, ValueType.DECIMAL, ValueType.EMAIL, ValueType.URL, ValueType.IP -> ""
         ValueType.BOOL -> false
         ValueType.BYTES, ValueType.IMAGE -> ByteArray(0)
         ValueType.BIGINT -> BigInteger.ZERO
-        ValueType.Uuid -> UUID(0, 0)
+        ValueType.UUID -> UUID(0, 0)
         ValueType.DATETIME -> LocalDateTime.of(1970, 1, 1, 0, 0, 0)
         ValueType.DATE -> LocalDate.of(1970, 1, 1)
         ValueType.TIME -> LocalTime.of(0, 0, 0)
-        ValueType.ENUM -> 0
+        ValueType.ENUMS -> 0
         ValueType.VEC -> emptyList<Any>()
         ValueType.MAP -> emptyMap<String, Any>()
         ValueType.OBJ -> emptyMap<String, Any>()

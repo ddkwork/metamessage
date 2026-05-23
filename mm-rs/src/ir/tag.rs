@@ -14,11 +14,11 @@ pub struct Tag {
     pub is_inherit: bool,
 
     pub desc: Option<String>,
-    pub default: Option<String>,
+    pub default_val: Option<String>,
     pub min: Option<String>,
     pub max: Option<String>,
     pub size: Option<u64>,
-    pub enum_values: Option<String>,
+    pub enums: Option<String>,
     pub pattern: Option<String>,
     pub location: Option<i32>,
     pub version: Option<i32>,
@@ -30,11 +30,11 @@ pub struct Tag {
     pub child_raw: bool,
     pub child_allow_empty: bool,
     pub child_unique: bool,
-    pub child_default: Option<String>,
+    pub child_default_val: Option<String>,
     pub child_min: Option<String>,
     pub child_max: Option<String>,
     pub child_size: Option<u64>,
-    pub child_enum: Option<String>,
+    pub child_enums: Option<String>,
     pub child_pattern: Option<String>,
     pub child_location: Option<i32>,
     pub child_version: Option<i32>,
@@ -54,11 +54,11 @@ impl Tag {
             unique: false,
             is_inherit: false,
             desc: None,
-            default: None,
+            default_val: None,
             min: None,
             max: None,
             size: None,
-            enum_values: None,
+            enums: None,
             pattern: None,
             location: None,
             version: None,
@@ -69,11 +69,11 @@ impl Tag {
             child_raw: false,
             child_allow_empty: false,
             child_unique: false,
-            child_default: None,
+            child_default_val: None,
             child_min: None,
             child_max: None,
             child_size: None,
-            child_enum: None,
+            child_enums: None,
             child_pattern: None,
             child_location: None,
             child_version: None,
@@ -108,8 +108,8 @@ impl Tag {
             self.unique = true;
         }
 
-        if let Some(ref v) = parent.child_default {
-            self.default = Some(v.clone());
+        if let Some(ref v) = parent.child_default_val {
+            self.default_val = Some(v.clone());
         }
 
         if let Some(ref v) = parent.child_min {
@@ -124,8 +124,8 @@ impl Tag {
             self.size = Some(v);
         }
 
-        if let Some(ref v) = parent.child_enum {
-            self.enum_values = Some(v.clone());
+        if let Some(ref v) = parent.child_enums {
+            self.enums = Some(v.clone());
             self.value_type = ValueType::Enum;
         }
 
@@ -181,8 +181,8 @@ impl Tag {
             dst.value_type = src.value_type;
         }
 
-        if let Some(ref v) = src.default {
-            dst.default = Some(v.clone());
+        if let Some(ref v) = src.default_val {
+            dst.default_val = Some(v.clone());
         }
 
         if let Some(ref v) = src.min {
@@ -197,8 +197,8 @@ impl Tag {
             dst.size = Some(v);
         }
 
-        if let Some(ref v) = src.enum_values {
-            dst.enum_values = Some(v.clone());
+        if let Some(ref v) = src.enums {
+            dst.enums = Some(v.clone());
         }
 
         if let Some(ref v) = src.pattern {
@@ -249,10 +249,7 @@ impl Tag {
             }
 
             let (key, value) = if let Some(idx) = part.find('=') {
-                (
-                    part[..idx].trim(),
-                    Some(part[idx + 1..].trim().to_string()),
-                )
+                (part[..idx].trim(), Some(part[idx + 1..].trim().to_string()))
             } else {
                 (part.trim(), None)
             };
@@ -272,9 +269,9 @@ impl Tag {
                         tag.desc = Some(v.trim_matches('"').to_string());
                     }
                 }
-                "default" => {
+                "default_val" => {
                     if let Some(ref v) = value {
-                        tag.default = Some(v.trim_matches('"').to_string());
+                        tag.default_val = Some(v.trim_matches('"').to_string());
                     }
                 }
                 "min" => {
@@ -292,10 +289,10 @@ impl Tag {
                         tag.size = v.parse::<u64>().ok();
                     }
                 }
-                "enum" => {
+                "enums" => {
                     if let Some(ref v) = value {
                         tag.value_type = ValueType::Enum;
-                        tag.enum_values = Some(v.trim_matches('"').to_string());
+                        tag.enums = Some(v.trim_matches('"').to_string());
                     }
                 }
                 "location" => {
@@ -392,9 +389,9 @@ impl Tag {
                         tag.child_unique = true;
                     }
                 }
-                "child_default" => {
+                "child_default_val" => {
                     if let Some(ref v) = value {
-                        tag.child_default = Some(v.trim_matches('"').to_string());
+                        tag.child_default_val = Some(v.trim_matches('"').to_string());
                     }
                 }
                 "child_min" => {
@@ -412,9 +409,9 @@ impl Tag {
                         tag.child_size = v.parse::<u64>().ok();
                     }
                 }
-                "child_enum" => {
+                "child_enums" => {
                     if let Some(ref v) = value {
-                        tag.child_enum = Some(v.trim_matches('"').to_string());
+                        tag.child_enums = Some(v.trim_matches('"').to_string());
                         tag.child_type = ValueType::Enum;
                     }
                 }
@@ -454,14 +451,14 @@ impl Tag {
 
         if self.value_type != ValueType::Unknown && !self.is_inherit {
             match self.value_type {
-                ValueType::String
-                | ValueType::Int
-                | ValueType::Float64
+                ValueType::Str
+                | ValueType::I
+                | ValueType::F64
                 | ValueType::Bool
-                | ValueType::Struct
-                | ValueType::Slice => {}
-                ValueType::Array => if self.size.is_none() || self.size.unwrap_or(0) == 0 {},
-                ValueType::Enum => if self.enum_values.is_some() {},
+                | ValueType::Obj
+                | ValueType::Vec => {}
+                ValueType::Arr => if self.size.is_none() || self.size.unwrap_or(0) == 0 {},
+                ValueType::Enum => if self.enums.is_some() {},
                 _ => {
                     parts.push(format!("type={}", self.value_type.to_str()));
                 }
@@ -498,9 +495,9 @@ impl Tag {
             parts.push("unique".to_string());
         }
 
-        if let Some(ref v) = self.default {
+        if let Some(ref v) = self.default_val {
             if !self.is_inherit {
-                parts.push(format!("default={}", v));
+                parts.push(format!("default_val={}", v));
             }
         }
 
@@ -522,9 +519,9 @@ impl Tag {
             }
         }
 
-        if let Some(ref v) = self.enum_values {
+        if let Some(ref v) = self.enums {
             if !self.is_inherit {
-                parts.push(format!("enum={}", v));
+                parts.push(format!("enums={}", v));
             }
         }
 
@@ -558,16 +555,16 @@ impl Tag {
 
         if self.child_type != ValueType::Unknown {
             match self.child_type {
-                ValueType::String
-                | ValueType::Int
-                | ValueType::Float64
+                ValueType::Str
+                | ValueType::I
+                | ValueType::F64
                 | ValueType::Bool
-                | ValueType::Struct
-                | ValueType::Slice => {}
-                ValueType::Array => {
+                | ValueType::Obj
+                | ValueType::Vec => {}
+                ValueType::Arr => {
                     if self.child_size.is_none() || self.child_size.unwrap_or(0) == 0 {}
                 }
-                ValueType::Enum => if self.child_enum.is_some() {},
+                ValueType::Enum => if self.child_enums.is_some() {},
                 _ => {
                     parts.push(format!("child_type={}", self.child_type.to_str()));
                 }
@@ -590,8 +587,8 @@ impl Tag {
             parts.push("child_unique".to_string());
         }
 
-        if let Some(ref v) = self.child_default {
-            parts.push(format!("child_default={}", v));
+        if let Some(ref v) = self.child_default_val {
+            parts.push(format!("child_default_val={}", v));
         }
 
         if let Some(ref v) = self.child_min {
@@ -606,8 +603,8 @@ impl Tag {
             parts.push(format!("child_size={}", v));
         }
 
-        if let Some(ref v) = self.child_enum {
-            parts.push(format!("child_enum={}", v));
+        if let Some(ref v) = self.child_enums {
+            parts.push(format!("child_enums={}", v));
         }
 
         if let Some(ref v) = self.child_pattern {
@@ -646,8 +643,8 @@ impl Tag {
             parts.push("nullable=true".to_string());
         }
 
-        if let Some(ref v) = self.default {
-            parts.push(format!("default={}", v));
+        if let Some(ref v) = self.default_val {
+            parts.push(format!("default_val={}", v));
         }
 
         if let Some(ref v) = self.min {
@@ -662,8 +659,8 @@ impl Tag {
             parts.push(format!("size={}", v));
         }
 
-        if let Some(ref v) = self.enum_values {
-            parts.push(format!("enum={}", v));
+        if let Some(ref v) = self.enums {
+            parts.push(format!("enums={}", v));
         }
 
         if let Some(ref v) = self.pattern {
@@ -698,8 +695,8 @@ impl Tag {
             parts.push("child_nullable=true".to_string());
         }
 
-        if let Some(ref v) = self.child_default {
-            parts.push(format!("child_default={}", v));
+        if let Some(ref v) = self.child_default_val {
+            parts.push(format!("child_default_val={}", v));
         }
 
         if let Some(ref v) = self.child_min {
@@ -714,8 +711,8 @@ impl Tag {
             parts.push(format!("child_size={}", v));
         }
 
-        if let Some(ref v) = self.child_enum {
-            parts.push(format!("child_enum={}", v));
+        if let Some(ref v) = self.child_enums {
+            parts.push(format!("child_enums={}", v));
         }
 
         if let Some(ref v) = self.child_pattern {

@@ -26,7 +26,7 @@ func TestParseMMTag_Basic(t *testing.T) {
 }
 
 func TestParseMMTag_Flags(t *testing.T) {
-	tag := "nullable;default=abc;max=10;min=5"
+	tag := "nullable;default_val=abc;max=10;min=5"
 	r, err := ParseMMTag(tag)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -34,13 +34,13 @@ func TestParseMMTag_Flags(t *testing.T) {
 	if !r.Nullable {
 		t.Fatalf("expected nullable=true")
 	}
-	if r.Default != "abc" {
-		t.Fatalf("expected default=abc, got %s", r.Default)
+	if r.DefaultVal != "abc" {
+		t.Fatalf("expected default_val=abc, got %s", r.DefaultVal)
 	}
 }
 
 func TestParseMMTag_QuotedAndSemicolon(t *testing.T) {
-	tag := `name="id"; desc="用户ID"; enum="active|pending"; pattern="^a,b$"; type=str; min=1; max=5; nullable; default="x"`
+	tag := `name="id"; desc="用户ID"; enums="active|pending"; pattern="^a,b$"; type=str; min=1; max=5; nullable; default_val="x"`
 	r, err := ParseMMTag(tag)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -51,8 +51,8 @@ func TestParseMMTag_QuotedAndSemicolon(t *testing.T) {
 	if r.Desc != "用户ID" {
 		t.Fatalf("expected desc=用户ID, got %s", r.Desc)
 	}
-	if r.Enum != "active|pending" {
-		t.Fatalf("expected enum=active|pending, got %s", r.Enum)
+	if r.Enums != "active|pending" {
+		t.Fatalf("expected enums=active|pending, got %s", r.Enums)
 	}
 	if r.Pattern != "^a,b$" {
 		t.Fatalf("expected pattern=^a,b$, got %s", r.Pattern)
@@ -66,8 +66,8 @@ func TestParseMMTag_QuotedAndSemicolon(t *testing.T) {
 	if !r.Nullable {
 		t.Fatalf("expected nullable flag present")
 	}
-	if r.Default != "x" {
-		t.Fatalf("expected default=x got %s", r.Default)
+	if r.DefaultVal != "x" {
+		t.Fatalf("expected default_val=x got %s", r.DefaultVal)
 	}
 }
 
@@ -116,7 +116,7 @@ func TestTagValidate_PatternAndEnum(t *testing.T) {
 		t.Fatalf("expected pattern mismatch for 12a")
 	}
 
-	etag := &Tag{Enum: "a|b|c"}
+	etag := &Tag{Enums: "a|b|c"}
 	_, _, err = etag.ValidateEnum("b")
 	if err != nil {
 		t.Fatalf("expected enum match for b")
@@ -182,7 +182,7 @@ func TestTagValidate_TypeSpecificWrappers(t *testing.T) {
 		t.Fatalf("expected valid big.Int value object, got %v", err)
 	}
 
-	enumTag := &Tag{Enum: "a|b|c"}
+	enumTag := &Tag{Enums: "a|b|c"}
 	_, _, err = enumTag.ValidateEnum("b")
 	if err != nil {
 		t.Fatalf("expected valid enum value, got %v", err)

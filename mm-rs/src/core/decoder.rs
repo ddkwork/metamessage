@@ -1,12 +1,11 @@
 use crate::core::constants::{
-    CONTAINER_ARRAY, CONTAINER_LEN_MASK,
-    TAG_ALLOW_EMPTY, TAG_CHILD_ALLOW_EMPTY, TAG_CHILD_DEFAULT, TAG_CHILD_DESC,
-    TAG_CHILD_ENUM, TAG_CHILD_LOCATION, TAG_CHILD_MAX, TAG_CHILD_MIME, TAG_CHILD_MIN,
-    TAG_CHILD_NULLABLE, TAG_CHILD_PATTERN, TAG_CHILD_RAW, TAG_CHILD_SIZE,
-    TAG_CHILD_TYPE, TAG_CHILD_UNIQUE, TAG_CHILD_VERSION,
-    TAG_DEFAULT, TAG_DESC, TAG_ENUM, TAG_EXAMPLE, TAG_IS_NULL, TAG_KEY_MASK,
-    TAG_LOCATION, TAG_MAX, TAG_MIME, TAG_MIN, TAG_NULLABLE, TAG_PAYLOAD_MASK,
-    TAG_PATTERN, TAG_RAW, TAG_SIZE, TAG_TYPE, TAG_UNIQUE, TAG_VERSION,
+    CONTAINER_ARRAY, CONTAINER_LEN_MASK, TAG_ALLOW_EMPTY, TAG_CHILD_ALLOW_EMPTY,
+    TAG_CHILD_DEFAULT_VAL, TAG_CHILD_DESC, TAG_CHILD_ENUMS, TAG_CHILD_LOCATION, TAG_CHILD_MAX,
+    TAG_CHILD_MIME, TAG_CHILD_MIN, TAG_CHILD_NULLABLE, TAG_CHILD_PATTERN, TAG_CHILD_RAW,
+    TAG_CHILD_SIZE, TAG_CHILD_TYPE, TAG_CHILD_UNIQUE, TAG_CHILD_VERSION, TAG_DEFAULT_VAL, TAG_DESC,
+    TAG_ENUMS, TAG_EXAMPLE, TAG_IS_NULL, TAG_KEY_MASK, TAG_LOCATION, TAG_MAX, TAG_MIME, TAG_MIN,
+    TAG_NULLABLE, TAG_PATTERN, TAG_PAYLOAD_MASK, TAG_RAW, TAG_SIZE, TAG_TYPE, TAG_UNIQUE,
+    TAG_VERSION,
 };
 use crate::core::prefix::{Prefix, FLOAT_LEN_1, FLOAT_LEN_MASK, FLOAT_POSITIVE_NEGATIVE_MASK};
 use crate::core::simple_value::SimpleValue;
@@ -114,12 +113,12 @@ impl Decoder {
 
         if tag.is_null {
             let data = match tag.value_type {
-                ValueType::Int => ValueData::Int(0),
-                ValueType::Float64 => ValueData::Float(0.0),
+                ValueType::I => ValueData::Int(0),
+                ValueType::F64 => ValueData::Float(0.0),
                 ValueType::Bool => ValueData::Bool(false),
-                ValueType::String => ValueData::String(String::new()),
+                ValueType::Str => ValueData::String(String::new()),
                 ValueType::Bytes => ValueData::Bytes(vec![]),
-                ValueType::DateTime => ValueData::String("1970-01-01T00:00:00Z".to_string()),
+                ValueType::Datetime => ValueData::String("1970-01-01T00:00:00Z".to_string()),
                 _ => ValueData::Null,
             };
             Ok(Node::Value(Value {
@@ -176,10 +175,10 @@ impl Decoder {
                 tag.unique = (payload & 1) == 1;
                 Ok(1)
             }
-            TAG_DEFAULT => {
+            TAG_DEFAULT_VAL => {
                 let s = self.read_tag_short_str(payload)?;
-                tag.default = Some(s);
-                Ok(1 + tag.default.as_ref().map_or(0, |s| s.len()))
+                tag.default_val = Some(s);
+                Ok(1 + tag.default_val.as_ref().map_or(0, |s| s.len()))
             }
             TAG_MIN => {
                 let s = self.read_tag_short_str(payload)?;
@@ -196,11 +195,11 @@ impl Decoder {
                 tag.size = Some(v);
                 Ok(2 + payload)
             }
-            TAG_ENUM => {
+            TAG_ENUMS => {
                 tag.value_type = ValueType::Enum;
                 let s = self.read_tag_str(payload)?;
-                tag.enum_values = Some(s);
-                Ok(1 + tag.enum_values.as_ref().map_or(0, |s| s.len()))
+                tag.enums = Some(s);
+                Ok(1 + tag.enums.as_ref().map_or(0, |s| s.len()))
             }
             TAG_PATTERN => {
                 let s = self.read_tag_short_str(payload)?;
@@ -255,10 +254,10 @@ impl Decoder {
                 tag.child_unique = (payload & 1) == 1;
                 Ok(1)
             }
-            TAG_CHILD_DEFAULT => {
+            TAG_CHILD_DEFAULT_VAL => {
                 let s = self.read_tag_short_str(payload)?;
-                tag.child_default = Some(s);
-                Ok(1 + tag.child_default.as_ref().map_or(0, |s| s.len()))
+                tag.child_default_val = Some(s);
+                Ok(1 + tag.child_default_val.as_ref().map_or(0, |s| s.len()))
             }
             TAG_CHILD_MIN => {
                 let s = self.read_tag_short_str(payload)?;
@@ -275,11 +274,11 @@ impl Decoder {
                 tag.child_size = Some(v);
                 Ok(2 + payload)
             }
-            TAG_CHILD_ENUM => {
+            TAG_CHILD_ENUMS => {
                 tag.child_type = ValueType::Enum;
                 let s = self.read_tag_str(payload)?;
-                tag.child_enum = Some(s);
-                Ok(1 + tag.child_enum.as_ref().map_or(0, |s| s.len()))
+                tag.child_enums = Some(s);
+                Ok(1 + tag.child_enums.as_ref().map_or(0, |s| s.len()))
             }
             TAG_CHILD_PATTERN => {
                 let s = self.read_tag_short_str(payload)?;

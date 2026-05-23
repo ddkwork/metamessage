@@ -1,4 +1,5 @@
 using MetaMessage.Jsonc;
+using MetaMessage.Ir;
 using JsoncParser = MetaMessage.Jsonc.Jsonc;
 
 namespace MetaMessage.Core;
@@ -184,7 +185,7 @@ public static class MetaMessage
             case ValueType.TIME:
                 encoder.EncodeInt64(TimeUtil.SecondsOfDay((DateTime)value));
                 break;
-            case ValueType.ENUM:
+            case ValueType.ENUMS:
                 encoder.EncodeInt64(Convert.ToInt64(value));
                 break;
             default:
@@ -281,8 +282,6 @@ public static class MetaMessage
         return bytes;
     }
 
-    private static JsoncTag? _treeTag; // re-entry guard
-
     private static byte[] EncodeFromJsoncNode(IJsoncNode node)
     {
         var encoder = new WireEncoder();
@@ -309,12 +308,12 @@ public static class MetaMessage
         var mmTag = MmTag.Empty();
         if (node?.Tag != null)
         {
-            mmTag = ConvertJsoncTagToMmTag(node.Tag);
+            mmTag = ConvertTagToMmTag(node.Tag);
         }
         encoder.EncodeTaggedPayload(payload.ToByteArray(), mmTag.ToBytes());
     }
 
-    private static MmTag ConvertJsoncTagToMmTag(JsoncTag tag)
+    private static MmTag ConvertTagToMmTag(Tag tag)
     {
         var mmTag = new MmTag();
         mmTag.Type = (Core.ValueType)(int)tag.Type;
@@ -323,13 +322,13 @@ public static class MetaMessage
         mmTag.IsNull = tag.IsNull;
         mmTag.Min = tag.MinValue ?? string.Empty;
         mmTag.Max = tag.MaxValue ?? string.Empty;
-        mmTag.DefaultValue = tag.DefaultValue ?? string.Empty;
+        mmTag.DefaultVal = tag.DefaultValue ?? string.Empty;
         return mmTag;
     }
 
-    private static JsoncTag ConvertMmTagToJsoncTag(MmTag mmTag)
+    private static Tag ConvertMmTagToTag(MmTag mmTag)
     {
-        var tag = new JsoncTag();
+        var tag = new Tag();
         tag.Type = (Jsonc.ValueType)(int)mmTag.Type;
         tag.Desc = mmTag.Desc;
         tag.Nullable = mmTag.Nullable;
@@ -338,8 +337,8 @@ public static class MetaMessage
             tag.MinValue = mmTag.Min;
         if (!string.IsNullOrEmpty(mmTag.Max) && mmTag.Max != "0")
             tag.MaxValue = mmTag.Max;
-        if (!string.IsNullOrEmpty(mmTag.DefaultValue))
-            tag.DefaultValue = mmTag.DefaultValue;
+        if (!string.IsNullOrEmpty(mmTag.DefaultVal))
+            tag.DefaultValue = mmTag.DefaultVal;
         return tag;
     }
 
@@ -485,7 +484,7 @@ public static class MetaMessage
                 case ValueType.STR:
                 case ValueType.EMAIL:
                 case ValueType.URL:
-                case ValueType.ENUM:
+                case ValueType.ENUMS:
                 case ValueType.DATETIME:
                 case ValueType.DATE:
                 case ValueType.TIME:
@@ -548,7 +547,7 @@ public static class MetaMessage
                         TokenType = JsoncTokenType.String
                     };
                     break;
-                case ValueType.ENUM:
+                case ValueType.ENUMS:
                     result = new JsoncValue { Value = scalar.Data?.ToString(), TokenType = JsoncTokenType.String };
                     break;
                 default:
@@ -582,7 +581,7 @@ public static class MetaMessage
 
         if (scalar.Tag != null)
         {
-            result.Tag = ConvertMmTagToJsoncTag(scalar.Tag);
+            result.Tag = ConvertMmTagToTag(scalar.Tag);
         }
         return result;
     }
@@ -596,7 +595,7 @@ public static class MetaMessage
         }
         if (array.Tag != null)
         {
-            jsoncArray.Tag = ConvertMmTagToJsoncTag(array.Tag);
+            jsoncArray.Tag = ConvertMmTagToTag(array.Tag);
         }
         return jsoncArray;
     }
