@@ -11,7 +11,7 @@ public static class ReflectMmEncoder
 
     public static IMmTree ValueToNode(object root, string tagStr)
     {
-        Tag tag = null;
+        Tag? tag = null;
         if (!string.IsNullOrEmpty(tagStr))
         {
             tag = Tag.Parse(tagStr);
@@ -22,7 +22,7 @@ public static class ReflectMmEncoder
         return ValueToNodeRecursive(root, tag, 0, "", false);
     }
 
-    private static IMmTree ValueToNodeRecursive(object v, Tag tag, int depth, string path, bool example)
+    private static IMmTree ValueToNodeRecursive(object? v, Tag tag, int depth, string path, bool example)
     {
         if (depth > MaxDepth)
         {
@@ -33,15 +33,17 @@ public static class ReflectMmEncoder
 
         if (v == null)
         {
-            if (tag.Type == ValueType.Unknown)
+            if (tag.Type != ValueType.Unknown)
             {
-                throw new Exception("invalid input: v is null with unknown type");
+                tag.IsNull = true;
+                return new MmScalar(null, "null", tag.Copy());
             }
-            tag.IsNull = true;
-            return new MmScalar(null, "null", tag.Copy());
+
+            // Try to infer from property context (will be handled by AnyToNode)
+            throw new Exception("invalid input: v is null with unknown type");
         }
 
-        object data = null;
+        object? data = null;
         string text = "null";
 
         var type = v.GetType();
@@ -143,6 +145,22 @@ public static class ReflectMmEncoder
             switch (tag.Type)
             {
                 case ValueType.I8:
+                    data = val;
+                    text = val.ToString();
+                    break;
+                default:
+                    throw new Exception($"unsupported type: {tag.Type}");
+            }
+            return new MmScalar(data, text, tag.Copy());
+        }
+
+        if (type == typeof(byte))
+        {
+            var val = (byte)v;
+            if (tag.Type == ValueType.Unknown) tag.Type = ValueType.U8;
+            switch (tag.Type)
+            {
+                case ValueType.U8:
                     data = val;
                     text = val.ToString();
                     break;
@@ -338,7 +356,7 @@ public static class ReflectMmEncoder
             tag.Nullable = true;
             var underlyingType = Nullable.GetUnderlyingType(valType);
             var prop = valType.GetProperty("HasValue");
-            var hasValue = (bool)prop.GetValue(val);
+            var hasValue = (bool)(prop!.GetValue(val) ?? false);
             if (!hasValue)
             {
                 tag.IsNull = true;
@@ -347,13 +365,13 @@ public static class ReflectMmEncoder
                 return nullScalar;
             }
             var getValue = valType.GetMethod("GetValueOrDefault", Type.EmptyTypes);
-            val = getValue.Invoke(val, null);
+            val = getValue!.Invoke(val, null)!;
             typ = underlyingType;
         }
 
         if (tag.ToString() == "")
         {
-            var mmAttr = typ.GetCustomAttribute(typeof(MM), false) as MM;
+            var mmAttr = typ!.GetCustomAttribute(typeof(MM), false) as MM;
             if (mmAttr != null)
             {
                 var tagNode = mmAttr.ToTag();
@@ -362,7 +380,7 @@ public static class ReflectMmEncoder
         }
 
         tag.Type = ValueType.Obj;
-        tag.Name = CamelToSnake.Convert(typ.Name);
+        tag.Name = CamelToSnake.Convert(typ!.Name ?? "");
         if (!string.IsNullOrEmpty(tag.Name))
         {
             if (string.IsNullOrEmpty(path))
@@ -375,15 +393,15 @@ public static class ReflectMmEncoder
             }
         }
 
-        if (typ.IsGenericType && typ.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+        if (typ!.IsGenericType && typ.GetGenericTypeDefinition() == typeof(Dictionary<,>))
         {
             tag.Type = ValueType.Map;
-            var dict = (IDictionary)val;
+            var dict = (IDictionary)val!;
             var entries = new List<KeyValuePair<MmScalar, IMmTree>>();
 
             foreach (var key in dict.Keys)
             {
-                var keyStr = key.ToString();
+                var keyStr = key.ToString() ?? "";
                 keyStr = CamelToSnake.Convert(keyStr);
 
                 var tagItem = Tag.NewTag();
@@ -401,7 +419,7 @@ public static class ReflectMmEncoder
             return new MmMap(entries, tag.Copy());
         }
 
-        if (val is IList list && !(val is byte[]))
+        if (val is IList list)
         {
             tag.Type = ValueType.Vec;
 
@@ -419,10 +437,10 @@ public static class ReflectMmEncoder
             return new MmArray(items, tag.Copy());
         }
 
-        if (typ.IsArray && typ != typeof(byte[]))
+        if (typ!.IsArray && typ != typeof(byte[]))
         {
             tag.Type = ValueType.Arr;
-            var arr = (Array)val;
+            var arr = (Array)val!;
             tag.Size = arr.Length;
 
             var items = new List<IMmTree>();
@@ -439,7 +457,7 @@ public static class ReflectMmEncoder
             return new MmArray(items, tag.Copy());
         }
 
-        if (typ.IsClass || (typ.IsValueType && !typ.IsPrimitive && !typ.IsEnum))
+        if (typ!.IsClass || (typ.IsValueType && !typ.IsPrimitive && !typ.IsEnum))
         {
             tag.Type = ValueType.Obj;
 
@@ -478,6 +496,12 @@ public static class ReflectMmEncoder
 
                 var p = $"{path}.{fieldKey}";
                 var propVal = property.GetValue(val);
+
+                if (tagItem.Type == ValueType.Unknown)
+                {
+                    tagItem.Type = InferTypeFromPropertyType(property.PropertyType);
+                }
+
                 var fieldNode = ValueToNodeRecursive(propVal, tagItem, depth, p, false);
 
                 fields.Add(new KeyValuePair<MmScalar, IMmTree>(
@@ -488,7 +512,7 @@ public static class ReflectMmEncoder
             return new MmMap(fields, tag.Copy());
         }
 
-        if (typ.IsEnum)
+        if (typ!.IsEnum)
         {
             tag.Type = ValueType.Enums;
             var intVal = Convert.ToInt64(val);
@@ -496,5 +520,47 @@ public static class ReflectMmEncoder
         }
 
         throw new Exception($"unsupported type: {typ.FullName}");
+    }
+
+    private static ValueType InferTypeFromPropertyType(Type propertyType)
+    {
+        var type = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+        if (type == typeof(string))
+            return ValueType.Str;
+        if (type == typeof(bool))
+            return ValueType.Bool;
+        if (type == typeof(byte))
+            return ValueType.U8;
+        if (type == typeof(sbyte))
+            return ValueType.I8;
+        if (type == typeof(short))
+            return ValueType.I16;
+        if (type == typeof(ushort))
+            return ValueType.U16;
+        if (type == typeof(int))
+            return ValueType.I;
+        if (type == typeof(uint))
+            return ValueType.U;
+        if (type == typeof(long))
+            return ValueType.I64;
+        if (type == typeof(ulong))
+            return ValueType.U64;
+        if (type == typeof(float))
+            return ValueType.F32;
+        if (type == typeof(double))
+            return ValueType.F64;
+        if (type == typeof(decimal))
+            return ValueType.Decimal;
+        if (type == typeof(DateTime))
+            return ValueType.Datetime;
+        if (type == typeof(byte[]))
+            return ValueType.Bytes;
+        if (type.IsEnum)
+            return ValueType.Enums;
+        if (type.IsClass || (type.IsValueType && !type.IsPrimitive && !type.IsEnum))
+            return ValueType.Obj;
+        if (typeof(IList).IsAssignableFrom(type))
+            return ValueType.Vec;
+        return ValueType.Obj;
     }
 }

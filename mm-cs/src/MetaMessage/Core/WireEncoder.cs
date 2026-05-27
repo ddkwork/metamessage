@@ -36,7 +36,7 @@ public class WireEncoder
         int start = _buf.Length;
         if (value >= 0)
         {
-            if (value <= WireConstants.INT_LEN_8 - 1)
+            if (value <= WireConstants.INT_LEN_1 - 1)
             {
                 _buf.Write(Prefix.POSITIVE_INT | (int)value);
             }
@@ -84,7 +84,7 @@ public class WireEncoder
             {
                 uv = (ulong)(-value);
             }
-            if (uv <= (ulong)(WireConstants.INT_LEN_8 - 1))
+            if (uv <= (ulong)(WireConstants.INT_LEN_1 - 1))
             {
                 _buf.Write(Prefix.NEGATIVE_INT | (int)uv);
             }
@@ -121,6 +121,15 @@ public class WireEncoder
                 _buf.Write(Prefix.NEGATIVE_INT | WireConstants.INT_LEN_8, (byte)(uv >> 56), (byte)(uv >> 48), (byte)(uv >> 40), (byte)(uv >> 32), (byte)(uv >> 24), (byte)(uv >> 16), (byte)(uv >> 8), (byte)uv);
             }
         }
+        return _buf.Length - start;
+    }
+
+    public int EncodeUInt64(ulong value)
+    {
+        int start = _buf.Length;
+        _buf.Write(Prefix.POSITIVE_INT | WireConstants.INT_LEN_8,
+            (byte)(value >> 56), (byte)(value >> 48), (byte)(value >> 40), (byte)(value >> 32),
+            (byte)(value >> 24), (byte)(value >> 16), (byte)(value >> 8), (byte)value);
         return _buf.Length - start;
     }
 

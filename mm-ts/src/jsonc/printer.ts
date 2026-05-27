@@ -126,7 +126,7 @@ export class JSONCPrinter {
   private dateToText(val: any): string {
     if (val instanceof Date) {
       const pad = (n: number) => String(n).padStart(2, '0');
-      return `${val.getFullYear()}-${pad(val.getMonth() + 1)}-${pad(val.getDate())} ${pad(val.getHours())}:${pad(val.getMinutes())}:${pad(val.getSeconds())}`;
+      return `${val.getUTCFullYear()}-${pad(val.getUTCMonth() + 1)}-${pad(val.getUTCDate())} ${pad(val.getUTCHours())}:${pad(val.getUTCMinutes())}:${pad(val.getUTCSeconds())}`;
     }
     return String(val);
   }
@@ -147,14 +147,14 @@ export class JSONCPrinter {
       if (tag.toString() !== '') {
         entry += `${indent}// mm: ${tag.toString()}\n${indent}`;
       }
-      entry += `${JSON.stringify(key)}: ${this.printNode(value)}`;
+      entry += `${JSON.stringify(key)}: ${this.printNode(value)},`;
       entries.push(entry);
     }
 
     this.indentLevel--;
     const closingIndent = this.getIndent();
 
-    return `{\n${entries.join(',\n\n')}\n${closingIndent}}`;
+    return `{\n${entries.join('\n')}\n${closingIndent}}`;
   }
 
   private printObjectCompact(obj: MMObject): string {
@@ -182,13 +182,13 @@ export class JSONCPrinter {
     const entries: string[] = [];
 
     for (const element of elements) {
-      entries.push(`${indent}${this.printNode(element)}`);
+      entries.push(`${indent}${this.printNode(element)},`);
     }
 
     this.indentLevel--;
     const closingIndent = this.getIndent();
 
-    return `[\n${entries.join(',\n')}\n${closingIndent}]`;
+    return `[\n${entries.join('\n')}\n${closingIndent}]`;
   }
 
   private printArrayCompact(array: MMArray): string {
