@@ -111,6 +111,7 @@ fn write_object(buf: &mut String, obj: &Object, indent: usize) {
         if let Some(tag) = field.value.get_tag() {
             let tag_str = tag.to_string();
             if !tag_str.is_empty() {
+                buf.push('\n');
                 write_indent(buf, indent + 1);
                 buf.push_str("// mm: ");
                 buf.push_str(&tag_str);
@@ -150,6 +151,17 @@ fn write_array(buf: &mut String, arr: &Array, indent: usize) {
     buf.push_str("[\n");
 
     for (_i, item) in arr.items.iter().enumerate() {
+        if let Some(tag) = item.get_tag() {
+            let tag_str = tag.to_string();
+            if !tag_str.is_empty() {
+                buf.push('\n');
+                write_indent(buf, indent + 1);
+                buf.push_str("// mm: ");
+                buf.push_str(&tag_str);
+                buf.push('\n');
+            }
+        }
+
         write_indent(buf, indent + 1);
         write_node(buf, item, indent + 1);
 

@@ -387,7 +387,7 @@ public class ComprehensiveTests
         var node = JsoncParser.ParseFromString(@"{
   // This is a leading comment
   ""name"": ""test"", // trailing comment
-  /* block comment */
+  // block comment
   ""value"": 42
 }");
         var obj = Assert.IsType<JsoncObject>(node);
@@ -724,5 +724,15 @@ public class ComprehensiveTests
         public string AlwaysPresent { get; set; } = string.Empty;
         public string? SometimesNull { get; set; }
         public string? SometimesPresent { get; set; }
+    }
+
+    [Fact]
+    public void TestEncodeChildTags_HexOutput()
+    {
+        string fixturePath = "/Users/lizongying/IdeaProjects/meta-message/tests/fixtures/03_tags/child_tags.jsonc";
+        string input = File.ReadAllText(fixturePath);
+        byte[] wire = EncodeFromJsonc(input);
+        string hex = Convert.ToHexString(wire).ToLower();
+        Console.WriteLine($"C# hex ({wire.Length} bytes): {hex}");
     }
 }

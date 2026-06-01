@@ -117,7 +117,7 @@ public class JSONCParser {
                 return result
             }
 
-            if tok.type == .leadingComment {
+            if tok.type == .comment {
                 if !pendingComments.isEmpty {
                     let last = pendingComments[pendingComments.count - 1]
                     if tok.line - last.line > 1 {
@@ -129,21 +129,12 @@ public class JSONCParser {
                 continue
             }
 
-            if tok.type == .trailingComment {
-                if let val = result {
-                    if let parsed = parseCommentToTag(tok.literal) {
-                        mergeNodeTag(val, parsed)
-                    }
-                }
-                _ = next()
-                continue
-            }
 
             result = try parseNode("")
         }
     }
 
-    private func parseNode(_ path: String) throws -> Node? {
+    private func parseNode(_ path: String, _ preTag: Tag? = nil) throws -> Node? {
         let tok = next()
 
         switch tok.type {
@@ -151,13 +142,13 @@ public class JSONCParser {
             return nil
 
         case .lBrace:
-            return try parseObject(tok.line, path)
+            return try parseObject(tok.line, path, preTag)
 
         case .lBracket:
-            return try parseArray(tok.line, path)
+            return try parseArray(tok.line, path, preTag)
 
         case .string:
-                let tag = consumeCommentsFor(tok.line)
+                let tag = preTag ?? consumeCommentsFor(tok.line)
                 let text = tok.literal
 
                 if let tag = tag {
@@ -169,11 +160,6 @@ public class JSONCParser {
                             throw JSONCParserError.invalidData("invalid string: \(text), valid: \"\"")
                         }
                         return Value(data: "", text: "", tag: tag, path: path)
-                    }
-
-                    let stringResult = validator.validate(text, tag: tag)
-                    if !stringResult.isValid {
-                        throw JSONCParserError.invalidData(stringResult.errors.joined(separator: ", "))
                     }
                 }
 
@@ -215,8 +201,15 @@ public class JSONCParser {
                         if uuidBytes.count == 16 {
                             parsedData = uuidBytes
                         }
+                    case .bytes:
+                        break
                     default:
                         break
+                    }
+
+                    let stringResult = validator.validate(parsedData, tag: tag)
+                    if !stringResult.isValid {
+                        throw JSONCParserError.invalidData(stringResult.errors.joined(separator: ", "))
                     }
                 }
 
@@ -224,7 +217,7 @@ public class JSONCParser {
                 return value
 
         case .number:
-            let tag = consumeCommentsFor(tok.line)
+            let tag = preTag ?? consumeCommentsFor(tok.line)
             if let tag = tag {
                 if tag.type == .unknown {
                     if tok.literal.contains(".") {
@@ -246,41 +239,58 @@ public class JSONCParser {
                         if tok.literal != "0" {
                             throw JSONCParserError.invalidData("invalid int: \(tok.literal), valid: 0")
                         }
+                        if tag.type == .bigint {
+                            return Value(data: "0", text: tok.literal, tag: tag, path: path)
+                        }
                         return Value(data: Int(0), text: tok.literal, tag: tag, path: path)
                     }
                 }
             }
 
             var data: Any?
-            if tok.literal.contains(".") {
-                data = Double(tok.literal)
-            } else if tok.literal.hasPrefix("-") {
-                if let ival = Int(tok.literal) {
-                    data = ival
-                } else {
-                    data = Int64(tok.literal)
+
+            if let tag = tag, tag.type == .bigint {
+                data = tok.literal
+                let numberResult = validator.validate(data!, tag: tag)
+                if !numberResult.isValid {
+                    throw JSONCParserError.invalidData(numberResult.errors.joined(separator: ", "))
                 }
             } else {
-                if let uval = UInt64(tok.literal) {
-                    if uval > UInt64(Int.max) {
-                        data = uval
+                if tok.literal.contains(".") {
+                    if let tag = tag, tag.type == .f32 {
+                        data = Float(tok.literal)
                     } else {
-                        data = Int(uval)
+                        data = Double(tok.literal)
+                    }
+                } else if tok.literal.hasPrefix("-") {
+                    if let ival = Int(tok.literal) {
+                        data = ival
+                    } else {
+                        data = Int64(tok.literal)
+                    }
+                } else {
+                    if let uval = UInt64(tok.literal) {
+                        if uval > UInt64(Int.max) {
+                            data = uval
+                        } else {
+                            data = Int(uval)
+                        }
+                    }
+                }
+
+                if let tag = tag {
+                    let numberResult = validator.validate(data, tag: tag)
+                    if !numberResult.isValid {
+                        throw JSONCParserError.invalidData(numberResult.errors.joined(separator: ", "))
                     }
                 }
             }
 
             let value = Value(data: data, text: tok.literal, tag: tag, path: path)
-            if let tag = tag {
-                let numberResult = validator.validate(data, tag: tag)
-                if !numberResult.isValid {
-                    throw JSONCParserError.invalidData(numberResult.errors.joined(separator: ", "))
-                }
-            }
             return value
 
         case .trueValue:
-            let tag = consumeCommentsFor(tok.line)
+            let tag = preTag ?? consumeCommentsFor(tok.line)
             if let tag = tag {
                 if tag.type == .unknown {
                     tag.type = .bool
@@ -297,7 +307,7 @@ public class JSONCParser {
             return value
 
         case .falseValue:
-            let tag = consumeCommentsFor(tok.line)
+            let tag = preTag ?? consumeCommentsFor(tok.line)
             if let tag = tag {
                 if tag.type == .unknown {
                     tag.type = .bool
@@ -321,7 +331,7 @@ public class JSONCParser {
         }
     }
 
-    private func parseObject(_ openLine: Int, _ path: String) throws -> MMObject {
+    private func parseObject(_ openLine: Int, _ path: String, _ preTag: Tag? = nil) throws -> MMObject {
         depth += 1
         if depth > maxDepth {
             throw JSONCParserError.maxDepthExceeded
@@ -329,7 +339,13 @@ public class JSONCParser {
 
         defer { depth -= 1 }
 
-        let tag = consumeCommentsFor(openLine)
+        var tag = consumeCommentsFor(openLine)
+        if let pt = preTag {
+            if tag == nil {
+                tag = Tag()
+            }
+            tag!.inherit(from: pt)
+        }
         if let tag = tag {
             if tag.type == .unknown {
                 tag.type = .obj
@@ -338,7 +354,7 @@ public class JSONCParser {
 
         let obj = MMObject(tag: tag, path: path)
 
-        if let tag = tag {
+        if let tag = tag, !tag.example {
             let structResult = validator.validate(obj, tag: tag)
             if !structResult.isValid {
                 throw JSONCParserError.invalidData(structResult.errors.joined(separator: ", "))
@@ -355,7 +371,7 @@ public class JSONCParser {
                 break
             }
 
-            if tok.type == .leadingComment {
+            if tok.type == .comment {
                 if !pendingComments.isEmpty {
                     let last = pendingComments[pendingComments.count - 1]
                     if tok.line - last.line > 1 {
@@ -367,16 +383,6 @@ public class JSONCParser {
                 continue
             }
 
-            if tok.type == .trailingComment {
-                if let lastField = obj.fields.last {
-                    let val = lastField.value
-                    if let parsed = parseCommentToTag(tok.literal) {
-                        mergeNodeTag(val, parsed)
-                    }
-                }
-                _ = next()
-                continue
-            }
 
             let keyTok = next()
             guard keyTok.type == .string else {
@@ -388,12 +394,21 @@ public class JSONCParser {
             _ = next()
 
             let childPath = "\(path).\(key)"
-            if let val = try parseNode(childPath) {
-                if let ct = val.getTag(), let parentTag = tag {
-                    ct.inherit(from: parentTag)
+            let valueTok = peek()
+            if let parentTag = tag {
+                let ownTag = consumeCommentsFor(valueTok.line)
+                let childTag = ownTag ?? Tag()
+                childTag.inherit(from: parentTag)
+
+                if let val = try parseNode(childPath, childTag) {
+                    let field = Field(key: key, value: val)
+                    obj.fields.append(field)
                 }
-                let field = Field(key: key, value: val)
-                obj.fields.append(field)
+            } else {
+                if let val = try parseNode(childPath) {
+                    let field = Field(key: key, value: val)
+                    obj.fields.append(field)
+                }
             }
 
             if peek().type == .comma {
@@ -404,7 +419,7 @@ public class JSONCParser {
         return obj
     }
 
-    private func parseArray(_ openLine: Int, _ path: String) throws -> MMArray {
+    private func parseArray(_ openLine: Int, _ path: String, _ preTag: Tag? = nil) throws -> MMArray {
         depth += 1
         if depth > maxDepth {
             throw JSONCParserError.maxDepthExceeded
@@ -412,7 +427,13 @@ public class JSONCParser {
 
         defer { depth -= 1 }
 
-        let tag = consumeCommentsFor(openLine)
+        var tag = consumeCommentsFor(openLine)
+        if let pt = preTag {
+            if tag == nil {
+                tag = Tag()
+            }
+            tag!.inherit(from: pt)
+        }
         if let tag = tag {
             if tag.type == .unknown {
                 if tag.size > 0 {
@@ -425,7 +446,7 @@ public class JSONCParser {
 
         let arr = MMArray(tag: tag, path: path)
 
-        if let tag = tag {
+        if let tag = tag, !tag.example {
             let arrayResult = validator.validate(arr, tag: tag)
             if !arrayResult.isValid {
                 throw JSONCParserError.invalidData(arrayResult.errors.joined(separator: ", "))
@@ -443,7 +464,7 @@ public class JSONCParser {
                 break
             }
 
-            if tok.type == .leadingComment {
+            if tok.type == .comment {
                 if !pendingComments.isEmpty {
                     let last = pendingComments[pendingComments.count - 1]
                     if tok.line - last.line > 1 {
@@ -455,24 +476,28 @@ public class JSONCParser {
                 continue
             }
 
-            if tok.type == .trailingComment {
-                if let lastItem = arr.items.last {
-                    let val = lastItem
-                    if let parsed = parseCommentToTag(tok.literal) {
-                        mergeNodeTag(val, parsed)
-                    }
-                }
-                _ = next()
-                continue
-            }
-
             let itemPath = "\(path)[\(index)]"
-            if let item = try parseNode(itemPath) {
-                if let ct = item.getTag(), let parentTag = tag {
-                    ct.inherit(from: parentTag)
+            if let parentTag = tag {
+                let elemOwnTag = consumeCommentsFor(tok.line)
+                let childTag = elemOwnTag ?? Tag()
+                childTag.inherit(from: parentTag)
+
+                if let item = try parseNode(itemPath, childTag) {
+                    if let value = item as? Value, childTag.type == .bigint, value.data == nil {
+                        value.data = value.text
+                        let bigIntResult = validator.validate(value.data!, tag: childTag)
+                        if !bigIntResult.isValid {
+                            throw JSONCParserError.invalidData(bigIntResult.errors.joined(separator: ", "))
+                        }
+                    }
+                    arr.items.append(item)
+                    index += 1
                 }
-                arr.items.append(item)
-                index += 1
+            } else {
+                if let item = try parseNode(itemPath) {
+                    arr.items.append(item)
+                    index += 1
+                }
             }
 
             if peek().type == .comma {

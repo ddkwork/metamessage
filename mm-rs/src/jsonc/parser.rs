@@ -81,7 +81,7 @@ impl Parser {
                 return Err("empty input".to_string());
             }
 
-            if tok.token_type == TokenType::LeadingComment {
+            if tok.token_type == TokenType::Comment {
                 if !self.pending.is_empty() {
                     let last = &self.pending[self.pending.len() - 1];
                     if tok.line - last.line > 1 {
@@ -89,11 +89,6 @@ impl Parser {
                     }
                 }
                 self.pending.push(tok);
-                self.next();
-                continue;
-            }
-
-            if tok.token_type == TokenType::TrailingComment {
                 self.next();
                 continue;
             }
@@ -113,6 +108,12 @@ impl Parser {
             TokenType::LBracket => self.parse_array(tok.line, path).map(Some),
             TokenType::String => {
                 let mut tag = self.consume_comments_for(tok.line).unwrap_or_default();
+                if self.peek().token_type == TokenType::Comment && self.peek().line == tok.line {
+                    let comment = self.next();
+                    if let Some(parsed) = Tag::parse(&comment.literal) {
+                        tag = Tag::merge(Some(tag), parsed);
+                    }
+                }
                 if tag.value_type == ValueType::Unknown {
                     tag.value_type = ValueType::Str;
                 }
@@ -147,6 +148,12 @@ impl Parser {
             }
             TokenType::Number => {
                 let mut tag = self.consume_comments_for(tok.line).unwrap_or_default();
+                if self.peek().token_type == TokenType::Comment && self.peek().line == tok.line {
+                    let comment = self.next();
+                    if let Some(parsed) = Tag::parse(&comment.literal) {
+                        tag = Tag::merge(Some(tag), parsed);
+                    }
+                }
                 let text = tok.literal;
 
                 if tag.value_type == ValueType::Unknown {
@@ -164,7 +171,7 @@ impl Parser {
                     if let Ok(ival) = text.parse::<i64>() {
                         data = ValueData::Int(ival);
                     } else {
-                        data = ValueData::Int(i64::MIN);
+                        data = ValueData::String(text.clone());
                     }
                 } else if let Ok(uval) = text.parse::<u64>() {
                     if uval > i64::MAX as u64 {
@@ -173,7 +180,7 @@ impl Parser {
                         data = ValueData::Int(uval as i64);
                     }
                 } else {
-                    data = ValueData::Int(0);
+                    data = ValueData::String(text.clone());
                 }
 
                 let value = Node::Value(Value {
@@ -186,6 +193,12 @@ impl Parser {
             }
             TokenType::True => {
                 let mut tag = self.consume_comments_for(tok.line).unwrap_or_default();
+                if self.peek().token_type == TokenType::Comment && self.peek().line == tok.line {
+                    let comment = self.next();
+                    if let Some(parsed) = Tag::parse(&comment.literal) {
+                        tag = Tag::merge(Some(tag), parsed);
+                    }
+                }
                 if tag.value_type == ValueType::Unknown {
                     tag.value_type = ValueType::Bool;
                 }
@@ -199,6 +212,12 @@ impl Parser {
             }
             TokenType::False => {
                 let mut tag = self.consume_comments_for(tok.line).unwrap_or_default();
+                if self.peek().token_type == TokenType::Comment && self.peek().line == tok.line {
+                    let comment = self.next();
+                    if let Some(parsed) = Tag::parse(&comment.literal) {
+                        tag = Tag::merge(Some(tag), parsed);
+                    }
+                }
                 if tag.value_type == ValueType::Unknown {
                     tag.value_type = ValueType::Bool;
                 }
@@ -211,7 +230,6 @@ impl Parser {
                 Ok(Some(value))
             }
             TokenType::Null => Err("null is not supported".to_string()),
-            TokenType::TrailingComment => Ok(None),
             _ => Err(format!("unexpected token: {:?}", tok.token_type)),
         }
     }
@@ -240,7 +258,7 @@ impl Parser {
                 break;
             }
 
-            if tok.token_type == TokenType::LeadingComment {
+            if tok.token_type == TokenType::Comment {
                 if !self.pending.is_empty() {
                     let last = &self.pending[self.pending.len() - 1];
                     if tok.line - last.line > 1 {
@@ -248,19 +266,6 @@ impl Parser {
                     }
                 }
                 self.pending.push(tok);
-                self.next();
-                continue;
-            }
-
-            if tok.token_type == TokenType::TrailingComment {
-                if let Some(parsed) = Tag::parse(&tok.literal) {
-                    if let Some(last) = fields.last_mut() {
-                        if let Some(ref mut existing) = last.value.get_tag_mut() {
-                            let merged = Tag::merge(Some(existing.clone()), parsed);
-                            **existing = merged;
-                        }
-                    }
-                }
                 self.next();
                 continue;
             }
@@ -333,7 +338,7 @@ impl Parser {
                 break;
             }
 
-            if tok.token_type == TokenType::LeadingComment {
+            if tok.token_type == TokenType::Comment {
                 if !self.pending.is_empty() {
                     let last = &self.pending[self.pending.len() - 1];
                     if tok.line - last.line > 1 {
@@ -341,19 +346,6 @@ impl Parser {
                     }
                 }
                 self.pending.push(tok);
-                self.next();
-                continue;
-            }
-
-            if tok.token_type == TokenType::TrailingComment {
-                if let Some(parsed) = Tag::parse(&tok.literal) {
-                    if let Some(last) = items.last_mut() {
-                        if let Some(ref mut existing) = last.get_tag_mut() {
-                            let merged = Tag::merge(Some(existing.clone()), parsed);
-                            **existing = merged;
-                        }
-                    }
-                }
                 self.next();
                 continue;
             }

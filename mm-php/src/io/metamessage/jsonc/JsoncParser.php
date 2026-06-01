@@ -105,7 +105,7 @@ class JsoncParser
                 return $val;
             }
 
-            if ($tok->type === JsoncTokenType::LeadingComment) {
+            if ($tok->type === JsoncTokenType::Comment) {
                 if (count($this->pending) > 0) {
                     $last = $this->pending[count($this->pending) - 1];
                     if ($tok->line - $last->line > 1) {
@@ -117,22 +117,11 @@ class JsoncParser
                 continue;
             }
 
-            if ($tok->type === JsoncTokenType::TrailingComment) {
-                if ($val !== null) {
-                    $parsed = self::parseCommentsToTag($tok->literal);
-                    if ($parsed !== null) {
-                        self::mergeNodeTag($val, $parsed);
-                    }
-                }
-                $this->next();
-                continue;
-            }
-
             $val = $this->parseValue('');
         }
     }
 
-    private function parseValue(string $path): ?Node
+    private function parseValue(string $path, ?Tag $inheritTag = null): ?Node
     {
         while (true) {
             $tok = $this->next();
@@ -153,6 +142,13 @@ class JsoncParser
 
                     if ($tag === null) {
                         $tag = Tag::newTag();
+                    }
+
+                    if ($tag->type === ValueType::UNKNOWN && $inheritTag !== null && $inheritTag->childType !== ValueType::UNKNOWN) {
+                        $tag->type = $inheritTag->childType;
+                        if ($inheritTag->childType === ValueType::ENUMS && $inheritTag->childEnums !== '') {
+                            $tag->enumValues = $inheritTag->childEnums;
+                        }
                     }
 
                     if ($tag->type === ValueType::UNKNOWN) {
@@ -396,6 +392,10 @@ class JsoncParser
                         $tag = Tag::newTag();
                     }
 
+                    if ($tag->type === ValueType::UNKNOWN && $inheritTag !== null && $inheritTag->childType !== ValueType::UNKNOWN) {
+                        $tag->type = $inheritTag->childType;
+                    }
+
                     if (str_contains($text, '.')) {
                         if ($tag->type === ValueType::UNKNOWN) {
                             $tag->type = ValueType::F64;
@@ -428,6 +428,10 @@ class JsoncParser
                                     $data = $result[0];
                                     $text = $result[1];
                                 }
+                                break;
+
+                            case ValueType::DECIMAL:
+                                $data = $text;
                                 break;
 
                             default:
@@ -735,6 +739,9 @@ class JsoncParser
                     if ($tag === null) {
                         $tag = Tag::newTag();
                     }
+                    if ($tag->type === ValueType::UNKNOWN && $inheritTag !== null && $inheritTag->childType !== ValueType::UNKNOWN) {
+                        $tag->type = $inheritTag->childType;
+                    }
                     if ($tag->type === ValueType::UNKNOWN) {
                         $tag->type = ValueType::BOOL;
                     }
@@ -764,6 +771,9 @@ class JsoncParser
 
                     if ($tag === null) {
                         $tag = Tag::newTag();
+                    }
+                    if ($tag->type === ValueType::UNKNOWN && $inheritTag !== null && $inheritTag->childType !== ValueType::UNKNOWN) {
+                        $tag->type = $inheritTag->childType;
                     }
                     if ($tag->type === ValueType::UNKNOWN) {
                         $tag->type = ValueType::BOOL;
@@ -836,7 +846,7 @@ class JsoncParser
                 break;
             }
 
-            if ($tok->type === JsoncTokenType::LeadingComment) {
+            if ($tok->type === JsoncTokenType::Comment) {
                 if (count($this->pending) > 0) {
                     $last = $this->pending[count($this->pending) - 1];
                     if ($tok->line - $last->line > 1) {
@@ -844,17 +854,6 @@ class JsoncParser
                     }
                 }
                 $this->pending[] = $tok;
-                $this->next();
-                continue;
-            }
-
-            if ($tok->type === JsoncTokenType::TrailingComment) {
-                if ($val !== null) {
-                    $parsed = self::parseCommentsToTag($tok->literal);
-                    if ($parsed !== null) {
-                        self::mergeNodeTag($val, $parsed);
-                    }
-                }
                 $this->next();
                 continue;
             }
@@ -944,7 +943,7 @@ class JsoncParser
                 break;
             }
 
-            if ($tok->type === JsoncTokenType::LeadingComment) {
+            if ($tok->type === JsoncTokenType::Comment) {
                 if (count($this->pending) > 0) {
                     $last = $this->pending[count($this->pending) - 1];
                     if ($tok->line - $last->line > 1) {
@@ -956,19 +955,8 @@ class JsoncParser
                 continue;
             }
 
-            if ($tok->type === JsoncTokenType::TrailingComment) {
-                if ($item !== null) {
-                    $parsed = self::parseCommentsToTag($tok->literal);
-                    if ($parsed !== null) {
-                        self::mergeNodeTag($item, $parsed);
-                    }
-                }
-                $this->next();
-                continue;
-            }
-
             $pa = sprintf('%s[%d]', $path, $i);
-            $item = $this->parseValue($pa);
+            $item = $this->parseValue($pa, $tag);
             if ($item === null) {
                 continue;
             }
@@ -984,14 +972,16 @@ class JsoncParser
             }
         }
 
-        switch ($tag->type) {
-            case ValueType::ARR:
-                $this->validateArr($tag, $arr->Items);
-                break;
+        if (!$tag->example) {
+            switch ($tag->type) {
+                case ValueType::ARR:
+                    $this->validateArr($tag, $arr->Items);
+                    break;
 
-            case ValueType::VEC:
-                $this->validateVec($tag, $arr->Items);
-                break;
+                case ValueType::VEC:
+                    $this->validateVec($tag, $arr->Items);
+                    break;
+            }
         }
 
         return $arr;
@@ -1015,10 +1005,8 @@ class JsoncParser
 
     private static function parseCommentsToTag(string $cs): ?Tag
     {
-        $trimmed = trim($cs);
-        $lower = strtolower($trimmed);
-        if (str_starts_with($lower, 'mm:')) {
-            $after = substr($trimmed, 3);
+        if (str_starts_with($cs, 'mm:')) {
+            $after = substr($cs, 3);
             $parsed = Tag::parseMMTag($after);
             return $parsed;
         }
@@ -1039,11 +1027,12 @@ class JsoncParser
         }
 
         if ($tag->pattern !== '') {
-            $re = @preg_match($tag->pattern, '');
+            $pattern = '/' . addcslashes($tag->pattern, '/') . '/';
+            $re = @preg_match($pattern, '');
             if ($re === false) {
                 throw new \Exception(sprintf('pattern "%s" compile error', $tag->pattern));
             }
-            if (!preg_match($tag->pattern, $val)) {
+            if (!preg_match($pattern, $val)) {
                 throw new \Exception(sprintf('value "%s" does not match pattern %s', $val, $tag->pattern));
             }
         }

@@ -27,10 +27,6 @@ void Scanner::skipWhitespace() {
     while (position_ < input_.size()) {
         char ch = input_[position_];
         if (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {
-            if (ch == '\n') {
-                ++line_;
-                column_ = 0;
-            }
             advance();
         } else {
             break;
@@ -38,18 +34,6 @@ void Scanner::skipWhitespace() {
     }
 }
 
-bool Scanner::isLeadingComment() const {
-    if (!lastToken_.has_value()) return true;
-    switch (lastToken_.value().type) {
-        case TokenType::Comma:
-        case TokenType::Colon:
-        case TokenType::LBrace:
-        case TokenType::LBracket:
-            return true;
-        default:
-            return false;
-    }
-}
 
 Token Scanner::scanString() {
     advance();
@@ -78,7 +62,7 @@ Token Scanner::scanString() {
 Token Scanner::scanComment() {
     advance();
     if (position_ >= input_.size())
-        return createToken(TokenType::LeadingComment, "");
+        return createToken(TokenType::Comment, "");
 
     if (input_[position_] == '/') {
         advance();
@@ -87,23 +71,9 @@ Token Scanner::scanComment() {
             comment.push_back(input_[position_]);
             advance();
         }
-        TokenType type = isLeadingComment() ? TokenType::LeadingComment : TokenType::TrailingComment;
-        return createToken(type, comment);
-    } else if (input_[position_] == '*') {
-        advance();
-        std::string comment;
-        while (position_ + 1 < input_.size()) {
-            if (input_[position_] == '*' && input_[position_ + 1] == '/') {
-                advance(2);
-                break;
-            }
-            comment.push_back(input_[position_]);
-            advance();
-        }
-        TokenType type = isLeadingComment() ? TokenType::LeadingComment : TokenType::TrailingComment;
-        return createToken(type, comment);
+        return createToken(TokenType::Comment, comment);
     }
-    return createToken(TokenType::Invalid, "");
+    return createToken(TokenType::Comment, "");
 }
 
 Token Scanner::scanNumber() {
@@ -165,7 +135,7 @@ Token Scanner::nextToken() {
             else if (std::isalpha(static_cast<unsigned char>(ch)))
                 return scanIdentifier();
             advance();
-            return createToken(TokenType::Invalid, "");
+            return createToken(TokenType::Comment, "");
     }
 }
 

@@ -6,7 +6,7 @@ export class JSONCPrinter {
   private indent: string;
   private indentLevel: number;
 
-  constructor(indent: string = '  ') {
+  constructor(indent: string = '\t') {
     this.indent = indent;
     this.indentLevel = 0;
   }
@@ -17,7 +17,7 @@ export class JSONCPrinter {
     let result = '';
 
     if (tag.toString() !== '') {
-      result += `// mm: ${tag.toString()}\n`;
+      result += `\n// mm: ${tag.toString()}\n`;
     }
 
     return (result += this.printNode(node));
@@ -64,77 +64,54 @@ export class JSONCPrinter {
 
   private valueToStringOnly(value: MMValue): string {
     const tag = value.getTag();
-    const type = tag.type;
-    const text = value.getText();
-    const val = value.getValue();
-
-    if (text) {
-      switch (type) {
-        case ValueType.Str:
-        case ValueType.Bytes:
-        case ValueType.Datetime:
-        case ValueType.Date:
-        case ValueType.Time:
-        case ValueType.Uuid:
-        case ValueType.Ip:
-        case ValueType.Url:
-        case ValueType.Email:
-        case ValueType.Enums:
-          return `"${text}"`;
+    if (tag.isNull) {
+      switch (tag.type) {
+        case ValueType.I:
+        case ValueType.I8:
+        case ValueType.I16:
+        case ValueType.I32:
+        case ValueType.I64:
+        case ValueType.U:
+        case ValueType.U8:
+        case ValueType.U16:
+        case ValueType.U32:
+        case ValueType.U64:
+        case ValueType.Bigint:
+          return '0';
+        case ValueType.F32:
+        case ValueType.F64:
+          return '0.0';
+        case ValueType.Bool:
+          return 'false';
         default:
-          return text;
+          return '""';
       }
     }
+    const type = tag.type;
+    const text = value.getText();
 
     switch (type) {
-      case ValueType.Unknown:
-        return 'null';
       case ValueType.Str:
-      case ValueType.Uuid:
-      case ValueType.Email:
-        return `"${val}"`;
       case ValueType.Bytes:
-        return `"${uint8ToBase64(val)}"`;
       case ValueType.Datetime:
       case ValueType.Date:
       case ValueType.Time:
-        return `"${this.dateToText(val)}"`;
+      case ValueType.Uuid:
       case ValueType.Ip:
       case ValueType.Url:
+      case ValueType.Email:
       case ValueType.Enums:
-        return `"${val}"`;
-      case ValueType.Bool:
-        return val ? 'true' : 'false';
-      case ValueType.Bigint:
-      case ValueType.I:
-      case ValueType.I8:
-      case ValueType.I16:
-      case ValueType.I32:
-      case ValueType.I64:
-      case ValueType.U:
-      case ValueType.U8:
-      case ValueType.U16:
-      case ValueType.U32:
-      case ValueType.U64:
-      case ValueType.F32:
-      case ValueType.F64:
+        return `"${text}"`;
       default:
-        return String(val);
+        return text;
     }
-  }
-
-  private dateToText(val: any): string {
-    if (val instanceof Date) {
-      const pad = (n: number) => String(n).padStart(2, '0');
-      return `${val.getUTCFullYear()}-${pad(val.getUTCMonth() + 1)}-${pad(val.getUTCDate())} ${pad(val.getUTCHours())}:${pad(val.getUTCMinutes())}:${pad(val.getUTCSeconds())}`;
-    }
-    return String(val);
   }
 
   private printObject(obj: MMObject): string {
     const properties = obj.getProperties();
     if (Object.keys(properties).length === 0) {
-      return '{}';
+      const indent = this.getIndent();
+      return `{\n${indent}}`;
     }
 
     this.indentLevel++;
@@ -145,7 +122,9 @@ export class JSONCPrinter {
       const tag = value.getTag();
       let entry = '';
       if (tag.toString() !== '') {
-        entry += `${indent}// mm: ${tag.toString()}\n${indent}`;
+        entry += `\n${indent}// mm: ${tag.toString()}\n${indent}`;
+      } else {
+        entry += `${indent}`;
       }
       entry += `${JSON.stringify(key)}: ${this.printNode(value)},`;
       entries.push(entry);
@@ -174,7 +153,8 @@ export class JSONCPrinter {
   private printArray(array: MMArray): string {
     const elements = array.getElements();
     if (elements.length === 0) {
-      return '[]';
+      const indent = this.getIndent();
+      return `[\n${indent}]`;
     }
 
     this.indentLevel++;
@@ -182,7 +162,14 @@ export class JSONCPrinter {
     const entries: string[] = [];
 
     for (const element of elements) {
-      entries.push(`${indent}${this.printNode(element)},`);
+      const tag = element.getTag();
+      if (tag.toString() !== '') {
+        entries.push(
+          `\n${indent}// mm: ${tag.toString()}\n${indent}${this.printNode(element)},`,
+        );
+      } else {
+        entries.push(`${indent}${this.printNode(element)},`);
+      }
     }
 
     this.indentLevel--;

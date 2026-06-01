@@ -48,6 +48,7 @@ public class JsoncPrinter
         if (string.IsNullOrEmpty(tagStr)) return;
         b.Append('\n');
         WriteIndent(b, indent);
+        b.Append("// mm: ");
         b.Append(tagStr);
         b.Append('\n');
     }
@@ -64,6 +65,32 @@ public class JsoncPrinter
     {
         if (v.Tag != null)
         {
+            if (v.Tag.IsNull)
+            {
+                if (v.Tag.Type == ValueType.Bool)
+                {
+                    b.Append("false");
+                }
+                else if (v.Tag.Type == ValueType.I || v.Tag.Type == ValueType.I8 || v.Tag.Type == ValueType.I16 ||
+                         v.Tag.Type == ValueType.I32 || v.Tag.Type == ValueType.I64 || v.Tag.Type == ValueType.U ||
+                         v.Tag.Type == ValueType.U8 || v.Tag.Type == ValueType.U16 || v.Tag.Type == ValueType.U32 ||
+                         v.Tag.Type == ValueType.U64 || v.Tag.Type == ValueType.Bigint || v.Tag.Type == ValueType.F32 ||
+                         v.Tag.Type == ValueType.F64 || v.Tag.Type == ValueType.Decimal)
+                {
+                    b.Append("0");
+                }
+                else if (v.Tag.Type == ValueType.Str || v.Tag.Type == ValueType.Email || v.Tag.Type == ValueType.Url ||
+                         v.Tag.Type == ValueType.Enums || v.Tag.Type == ValueType.Datetime || v.Tag.Type == ValueType.Date ||
+                         v.Tag.Type == ValueType.Time || v.Tag.Type == ValueType.Uuid || v.Tag.Type == ValueType.Bytes)
+                {
+                    b.Append("\"\"");
+                }
+                else
+                {
+                    b.Append("\"\"");
+                }
+                return;
+            }
             switch (v.Tag.Type)
             {
                 case ValueType.Str:
@@ -93,24 +120,48 @@ public class JsoncPrinter
                 case ValueType.U64:
                 case ValueType.Bigint:
                 case ValueType.Decimal:
-                case ValueType.Bool:
-                    if (v.Value is bool bVal)
                     {
-                        b.Append(bVal ? "true" : "false");
+                        if (v.Value is string sVal)
+                        {
+                            b.Append(sVal);
+                        }
+                        else if (v.Value is bool boolVal)
+                        {
+                            b.Append(boolVal ? "true" : "false");
+                        }
+                        else
+                        {
+                            b.Append(v.Value?.ToString() ?? "0");
+                        }
                     }
-                    else
+                    return;
+
+                case ValueType.Bool:
                     {
-                        b.Append(v.Value?.ToString() ?? "null");
+                        if (v.Value is bool boolVal)
+                        {
+                            b.Append(boolVal ? "true" : "false");
+                        }
+                        else
+                        {
+                            b.Append(v.Value?.ToString() ?? "false");
+                        }
                     }
                     return;
 
                 case ValueType.F32:
                 case ValueType.F64:
-                    b.Append(v.Value?.ToString() ?? "null");
+                    {
+                        var fStr = v.Value?.ToString() ?? "0";
+                        b.Append(fStr);
+                    }
                     return;
 
                 default:
-                    b.Append(v.Value?.ToString() ?? "null");
+                    {
+                        var dStr = v.Value?.ToString() ?? "null";
+                        b.Append(dStr);
+                    }
                     return;
             }
         }
@@ -142,7 +193,6 @@ public class JsoncPrinter
 
     private void WriteObjectJSONC(System.Text.StringBuilder b, List<KeyValuePair<string, IJsoncNode>> fields, Tag? tag, int indent)
     {
-        WriteLeadingComments(b, tag, indent);
         b.Append('{');
         if (!_prettyPrint)
         {
@@ -175,7 +225,6 @@ public class JsoncPrinter
 
     private void WriteArrayJSONC(System.Text.StringBuilder b, List<IJsoncNode> items, Tag? tag, int indent)
     {
-        WriteLeadingComments(b, tag, indent);
         b.Append('[');
         if (!_prettyPrint)
         {
