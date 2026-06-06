@@ -346,13 +346,13 @@ public class Tag
                 Type == ValueType.F64 ||
                 Type == ValueType.Bool ||
                 Type == ValueType.Obj ||
+                Type == ValueType.Map ||
                 Type == ValueType.Vec)
             {
             }
             else
             {
-                if ((Type == ValueType.Arr && Size > 0) ||
-                    (Type == ValueType.Enums && !string.IsNullOrEmpty(Enums)) ||
+                if ((Type == ValueType.Enums && !string.IsNullOrEmpty(Enums)) ||
                     (Type == ValueType.Media && !string.IsNullOrEmpty(Mime)))
                 {
                 }
@@ -454,7 +454,6 @@ public class Tag
         if (ChildType != ValueType.Unknown)
         {
             if (ChildType == ValueType.Str ||
-                ChildType == ValueType.Bytes ||
                 ChildType == ValueType.I ||
                 ChildType == ValueType.F64 ||
                 ChildType == ValueType.Bool ||
@@ -464,8 +463,7 @@ public class Tag
             }
             else
             {
-                if ((ChildType == ValueType.Arr && ChildSize > 0) ||
-                    (ChildType == ValueType.Enums && !string.IsNullOrEmpty(ChildEnums)) ||
+                if ((ChildType == ValueType.Enums && !string.IsNullOrEmpty(ChildEnums)) ||
                     (ChildType == ValueType.Media && !string.IsNullOrEmpty(ChildMime)))
                 {
                 }
@@ -902,13 +900,13 @@ public class Tag
                 Type == ValueType.F64 ||
                 Type == ValueType.Bool ||
                 Type == ValueType.Obj ||
+                Type == ValueType.Map ||
                 Type == ValueType.Vec)
             {
             }
             else
             {
-                if ((Type == ValueType.Arr && Size > 0) ||
-                    (Type == ValueType.Enums && !string.IsNullOrEmpty(Enums)) ||
+                if ((Type == ValueType.Enums && !string.IsNullOrEmpty(Enums)) ||
                     (Type == ValueType.Media && !string.IsNullOrEmpty(Mime)))
                 {
                 }
@@ -1087,8 +1085,7 @@ public class Tag
             }
             else
             {
-                if ((ChildType == ValueType.Arr && ChildSize > 0) ||
-                    (ChildType == ValueType.Enums && !string.IsNullOrEmpty(ChildEnums)) ||
+                if ((ChildType == ValueType.Enums && !string.IsNullOrEmpty(ChildEnums)) ||
                     (ChildType == ValueType.Media && !string.IsNullOrEmpty(ChildMime)))
                 {
                 }

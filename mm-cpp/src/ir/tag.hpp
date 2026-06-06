@@ -4,13 +4,21 @@
 #include "value_type.hpp"
 #include <algorithm>
 #include <cstdint>
-#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 
 namespace mmc {
 namespace ir {
+
+struct ValidationResult {
+  bool isValid;
+  std::string error;
+
+  ValidationResult() : isValid(true) {}
+  explicit ValidationResult(std::string err)
+      : isValid(false), error(std::move(err)) {}
+};
 
 enum TagKey : uint8_t {
   KIsNull = 0 << 3,
@@ -95,38 +103,63 @@ struct Tag {
   static Tag create() { return Tag{}; }
 
   void inherit(const Tag &parent) {
-    isInherit = true;
-    if (!parent.childDesc.empty())
+    if (!parent.childDesc.empty()) {
       desc = parent.childDesc;
-    if (parent.childType != ValueType::Unknown)
+      isInherit = true;
+    }
+    if (parent.childType != ValueType::Unknown) {
       type = parent.childType;
-    if (parent.childNullable)
+      isInherit = true;
+    }
+    if (parent.childNullable) {
       nullable = parent.childNullable;
-    if (parent.childAllowEmpty)
+      isInherit = true;
+    }
+    if (parent.childAllowEmpty) {
       allowEmpty = parent.childAllowEmpty;
-    if (parent.childUnique)
+      isInherit = true;
+    }
+    if (parent.childUnique) {
       unique = parent.childUnique;
-    if (!parent.child_default_val.empty())
+      isInherit = true;
+    }
+    if (!parent.child_default_val.empty()) {
       default_val = parent.child_default_val;
-    if (!parent.childMin.empty())
+      isInherit = true;
+    }
+    if (!parent.childMin.empty()) {
       min = parent.childMin;
-    if (!parent.childMax.empty())
+      isInherit = true;
+    }
+    if (!parent.childMax.empty()) {
       max = parent.childMax;
-    if (parent.childSize != 0)
+      isInherit = true;
+    }
+    if (parent.childSize != 0) {
       size = parent.childSize;
+      isInherit = true;
+    }
     if (!parent.child_enums.empty()) {
       enums = parent.child_enums;
       type = ValueType::Enums;
+      isInherit = true;
     }
-    if (!parent.childPattern.empty())
+    if (!parent.childPattern.empty()) {
       pattern = parent.childPattern;
-    if (parent.childLocationOffset != DefaultLocationOffset)
+      isInherit = true;
+    }
+    if (parent.childLocationOffset != DefaultLocationOffset) {
       locationOffset = parent.childLocationOffset;
-    if (parent.childVersion != DefaultVersion)
+      isInherit = true;
+    }
+    if (parent.childVersion != DefaultVersion) {
       version = parent.childVersion;
+      isInherit = true;
+    }
     if (!parent.childMime.empty()) {
       mime = parent.childMime;
       type = ValueType::Media;
+      isInherit = true;
     }
   }
 
@@ -144,8 +177,7 @@ struct Tag {
       bool skip = (type == ValueType::Str || type == ValueType::I ||
                    type == ValueType::F64 || type == ValueType::Bool ||
                    type == ValueType::Obj || type == ValueType::Vec);
-      if (!(skip || (type == ValueType::Arr && size > 0) ||
-            (type == ValueType::Enums && !enums.empty()) ||
+      if (!(skip || (type == ValueType::Enums && !enums.empty()) ||
             (type == ValueType::Media && !mime.empty()))) {
         add("type=" + valueTypeToString(type));
       }
@@ -183,42 +215,42 @@ struct Tag {
       add("version=" + std::to_string(version));
     if (!mime.empty() && !isInherit)
       add("mime=" + mime);
-    if (!childDesc.empty())
+    if (!childDesc.empty() && !isInherit)
       add("child_desc=\"" + childDesc + "\"");
-    if (childType != ValueType::Unknown) {
+    if (childType != ValueType::Unknown && !isInherit) {
       bool childSkip =
           (childType == ValueType::Str || childType == ValueType::I ||
            childType == ValueType::F64 || childType == ValueType::Bool ||
            childType == ValueType::Obj || childType == ValueType::Vec);
-      if (!(childSkip || (childType == ValueType::Arr && childSize > 0) ||
+      if (!(childSkip ||
             (childType == ValueType::Enums && !child_enums.empty()) ||
             (childType == ValueType::Media && !childMime.empty()))) {
         add("child_type=" + valueTypeToString(childType));
       }
     }
-    if (childNullable)
+    if (childNullable && !isInherit)
       add("child_nullable");
-    if (childAllowEmpty)
+    if (childAllowEmpty && !isInherit)
       add("child_allow_empty");
-    if (childUnique)
+    if (childUnique && !isInherit)
       add("child_unique");
-    if (!child_default_val.empty())
+    if (!child_default_val.empty() && !isInherit)
       add("child_default_val=" + child_default_val);
-    if (!childMin.empty())
+    if (!childMin.empty() && !isInherit)
       add("child_min=" + childMin);
-    if (!childMax.empty())
+    if (!childMax.empty() && !isInherit)
       add("child_max=" + childMax);
-    if (childSize != 0)
+    if (childSize != 0 && !isInherit)
       add("child_size=" + std::to_string(childSize));
-    if (!child_enums.empty())
+    if (!child_enums.empty() && !isInherit)
       add("child_enums=" + child_enums);
-    if (!childPattern.empty())
+    if (!childPattern.empty() && !isInherit)
       add("child_pattern=" + childPattern);
-    if (childLocationOffset != DefaultLocationOffset)
+    if (childLocationOffset != DefaultLocationOffset && !isInherit)
       add("child_location=" + std::to_string(childLocationOffset));
-    if (childVersion != DefaultVersion)
+    if (childVersion != DefaultVersion && !isInherit)
       add("child_version=" + std::to_string(childVersion));
-    if (!childMime.empty())
+    if (!childMime.empty() && !isInherit)
       add("child_mime=" + childMime);
 
     return b.str();
@@ -358,8 +390,7 @@ struct Tag {
                    type == ValueType::I || type == ValueType::F64 ||
                    type == ValueType::Bool || type == ValueType::Obj ||
                    type == ValueType::Vec);
-      if (!(skip || (type == ValueType::Arr && size > 0) ||
-            (type == ValueType::Enums && !enums.empty()) ||
+      if (!(skip || (type == ValueType::Enums && !enums.empty()) ||
             (type == ValueType::Media && !mime.empty()))) {
         writeByte(static_cast<uint8_t>(KType));
         writeByte(static_cast<uint8_t>(type));
@@ -394,53 +425,113 @@ struct Tag {
     if (!mime.empty() && !isInherit)
       encodeU64(&bs, KMime, static_cast<uint64_t>(parseMime(mime)));
 
-    if (!childDesc.empty())
+    if (!childDesc.empty() && !isInherit)
       encodeString(&bs, KChildDesc, childDesc);
-    if (childType != ValueType::Unknown) {
+    if (childType != ValueType::Unknown && !isInherit) {
       bool childSkip =
           (childType == ValueType::Str || childType == ValueType::I ||
            childType == ValueType::F64 || childType == ValueType::Bool ||
            childType == ValueType::Obj || childType == ValueType::Vec);
-      if (!(childSkip || (childType == ValueType::Arr && childSize > 0) ||
+      if (!(childSkip ||
             (childType == ValueType::Enums && !child_enums.empty()) ||
             (childType == ValueType::Media && !childMime.empty()))) {
         writeByte(static_cast<uint8_t>(KChildType));
         writeByte(static_cast<uint8_t>(childType));
       }
     }
-    if (childNullable)
+    if (childNullable && !isInherit)
       writeByte(static_cast<uint8_t>(KChildNullable | 1));
-    if (childAllowEmpty)
+    if (childAllowEmpty && !isInherit)
       writeByte(static_cast<uint8_t>(KChildAllowEmpty | 1));
-    if (childUnique)
+    if (childUnique && !isInherit)
       writeByte(static_cast<uint8_t>(KChildUnique | 1));
-    if (!child_default_val.empty())
+    if (!child_default_val.empty() && !isInherit)
       encodeString(&bs, KChildDefaultVal, child_default_val);
-    if (!childMin.empty())
+    if (!childMin.empty() && !isInherit)
       encodeString(&bs, KChildMin, childMin);
-    if (!childMax.empty())
+    if (!childMax.empty() && !isInherit)
       encodeString(&bs, KChildMax, childMax);
-    if (childSize != 0)
+    if (childSize != 0 && !isInherit)
       encodeU64(&bs, KChildSize, static_cast<uint64_t>(childSize));
-    if (!child_enums.empty())
+    if (!child_enums.empty() && !isInherit)
       encodeString(&bs, KChildEnums, child_enums);
-    if (!childPattern.empty())
+    if (!childPattern.empty() && !isInherit)
       encodeString(&bs, KChildPattern, childPattern);
-    if (childLocationOffset != DefaultLocationOffset) {
+    if (childLocationOffset != DefaultLocationOffset && !isInherit) {
       std::string v = std::to_string(childLocationOffset);
       writeByte(static_cast<uint8_t>(KChildLocation) |
                 static_cast<uint8_t>(v.size()));
       writeStr(v);
     }
-    if (childVersion != DefaultVersion)
+    if (childVersion != DefaultVersion && !isInherit)
       encodeU64(&bs, KChildVersion, static_cast<uint64_t>(childVersion));
-    if (!childMime.empty())
+    if (!childMime.empty() && !isInherit)
       encodeU64(&bs, KChildMime, static_cast<uint64_t>(parseMime(childMime)));
 
     if (more != 0)
       encodeU64(&bs, KMore, static_cast<uint64_t>(more));
 
     return bs;
+  }
+
+  ValidationResult validateVec(size_t itemCount) const {
+    if (desc.size() > 65535) {
+      return ValidationResult("desc length exceeds 65535 bytes");
+    }
+
+    if (locationOffset != 0) {
+      return ValidationResult("type slice not support location UTC" +
+                              std::to_string(locationOffset));
+    }
+
+    if (itemCount == 0) {
+      if (allowEmpty) {
+        return ValidationResult();
+      }
+      return ValidationResult(
+          "not allow empty (add 'allow_empty' tag if empty is allowed)");
+    }
+
+    if (size != 0 && static_cast<int>(itemCount) != size) {
+      return ValidationResult("size mismatch, want=" + std::to_string(size) +
+                              ", got=" + std::to_string(itemCount));
+    }
+
+    if (childUnique) {
+      // Duplicate check requires item data access
+    }
+
+    return ValidationResult();
+  }
+
+  ValidationResult validateArr(size_t itemCount) const {
+    if (desc.size() > 65535) {
+      return ValidationResult("desc length exceeds 65535 bytes");
+    }
+
+    if (locationOffset != 0) {
+      return ValidationResult("type array not support location UTC" +
+                              std::to_string(locationOffset));
+    }
+
+    if (itemCount == 0) {
+      if (allowEmpty) {
+        return ValidationResult();
+      }
+      return ValidationResult(
+          "not allow empty (add 'allow_empty' tag if empty is allowed)");
+    }
+
+    if (size != 0 && static_cast<int>(itemCount) != size) {
+      return ValidationResult("size mismatch, want=" + std::to_string(size) +
+                              ", got=" + std::to_string(itemCount));
+    }
+
+    if (childUnique) {
+      // Duplicate check requires item data access
+    }
+
+    return ValidationResult();
   }
 
 private:

@@ -101,8 +101,7 @@ inline void printValue(std::ostringstream &os, std::shared_ptr<ir::Value> val,
     break;
   }
   case ir::ValueType::Bytes: {
-    std::vector<uint8_t> bytes(val->text.begin(), val->text.end());
-    os << "\"" << base64_encode(bytes) << "\"";
+    os << "\"" << val->text << "\"";
     break;
   }
   case ir::ValueType::Bool:
@@ -113,11 +112,21 @@ inline void printValue(std::ostringstream &os, std::shared_ptr<ir::Value> val,
   case ir::ValueType::I16:
   case ir::ValueType::I32:
   case ir::ValueType::I64:
+    if (val->data != 0 || val->text == "0" || val->text.empty())
+      os << val->data;
+    else
+      os << val->text;
+    break;
   case ir::ValueType::U:
   case ir::ValueType::U8:
   case ir::ValueType::U16:
   case ir::ValueType::U32:
   case ir::ValueType::U64:
+    if (val->data != 0 || val->text == "0" || val->text.empty())
+      os << static_cast<uint64_t>(val->data);
+    else
+      os << val->text;
+    break;
   case ir::ValueType::F32:
   case ir::ValueType::F64:
     os << val->text;
