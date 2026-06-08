@@ -13,7 +13,7 @@ use crate::core::prefix::{
     PREFIX_SIMPLE, PREFIX_STRING, PREFIX_TAG,
 };
 use crate::core::simple_value::SimpleValue;
-use crate::ir::ast::{Array, Field, Node, Object, Value, ValueData};
+use crate::ir::ast::{Field, Node, NodeArray, NodeObject, NodeScalar, ValueData};
 use crate::ir::mime::mime_to_str;
 use crate::ir::tag::Tag;
 use crate::ir::ValueType;
@@ -116,34 +116,14 @@ impl Decoder {
                 Node::Value(v) => (v.data.clone(), v.text.clone()),
                 _ => (ValueData::Null, String::new()),
             };
-            Ok(Node::Value(Value {
+            Ok(Node::Value(NodeScalar {
                 data,
                 text,
                 path: String::new(),
                 tag: Some(tag),
             }))
         } else {
-            let mut inner_tag = Tag::new();
-            inner_tag.inherit(&tag);
-            if tag.child_type == ValueType::Unknown {
-                inner_tag.value_type = tag.value_type;
-                if tag.enums.is_some() {
-                    inner_tag.enums = tag.enums.clone();
-                }
-                if tag.mime.is_some() {
-                    inner_tag.mime = tag.mime.clone();
-                }
-                if tag.version.is_some() {
-                    inner_tag.version = tag.version;
-                }
-            }
-            if inner_tag.location.is_none() {
-                inner_tag.location = tag.location;
-            }
-            if inner_tag.version.is_none() {
-                inner_tag.version = tag.version;
-            }
-            self.decode_node(&inner_tag, "")
+            self.decode_node(&tag, "")
         }
     }
 
@@ -269,14 +249,9 @@ impl Decoder {
             }
             TAG_MIME => {
                 tag.value_type = ValueType::Media;
-                let mime_id = if payload < 7 {
-                    payload as u8
-                } else {
-                    self.read_byte()?
-                };
-                tag.mime = Some(mime_to_str(mime_id).to_string());
-                let extra = if payload < 7 { 0 } else { 1 };
-                Ok(1 + extra)
+                let mime_id = self.read_tag_uint(payload)?;
+                tag.mime = Some(mime_to_str(mime_id as u8).to_string());
+                Ok(2 + payload)
             }
             TAG_CHILD_DESC => {
                 let s = self.read_tag_str(payload)?;
@@ -383,14 +358,9 @@ impl Decoder {
             }
             TAG_CHILD_MIME => {
                 tag.child_type = ValueType::Media;
-                let mime_id = if payload < 7 {
-                    payload as u8
-                } else {
-                    self.read_byte()?
-                };
-                tag.child_mime = Some(mime_to_str(mime_id).to_string());
-                let extra = if payload < 7 { 0 } else { 1 };
-                Ok(1 + extra)
+                let mime_id = self.read_tag_uint(payload)?;
+                tag.child_mime = Some(mime_to_str(mime_id as u8).to_string());
+                Ok(2 + payload)
             }
             _ => Ok(1),
         }
@@ -451,7 +421,7 @@ impl Decoder {
             _ => (ValueData::String(String::new()), String::new()),
         };
 
-        Ok(Node::Value(Value {
+        Ok(Node::Value(NodeScalar {
             data,
             text,
             path: String::new(),
@@ -549,7 +519,7 @@ impl Decoder {
             }
         };
 
-        Ok(Node::Value(Value {
+        Ok(Node::Value(NodeScalar {
             data,
             text,
             path: String::new(),
@@ -574,7 +544,7 @@ impl Decoder {
         let data = ValueData::Int(-(v as i64));
         let text = format!("-{}", v);
 
-        Ok(Node::Value(Value {
+        Ok(Node::Value(NodeScalar {
             data,
             text,
             path: String::new(),
@@ -613,7 +583,7 @@ impl Decoder {
             v
         };
 
-        Ok(Node::Value(Value {
+        Ok(Node::Value(NodeScalar {
             data: ValueData::Float(v),
             text: ryu::Buffer::new().format_finite(v).to_string(),
             path: String::new(),
@@ -638,7 +608,7 @@ impl Decoder {
             String::new()
         };
 
-        Ok(Node::Value(Value {
+        Ok(Node::Value(NodeScalar {
             data: ValueData::String(s.clone()),
             text: s,
             path: String::new(),
@@ -685,7 +655,7 @@ impl Decoder {
             }
         };
 
-        Ok(Node::Value(Value {
+        Ok(Node::Value(NodeScalar {
             data: ValueData::Bytes(bytes.clone()),
             text,
             path: String::new(),
@@ -716,26 +686,32 @@ impl Decoder {
     fn decode_array(&mut self, prefix: u8, tag: &Tag) -> Result<Node, std::io::Error> {
         let total_bytes = self.decode_container_len(prefix)?;
 
+        // Infer type=arr when type is Unknown and size is present
+        let mut inferred_tag = tag.clone();
+        if inferred_tag.value_type == ValueType::Unknown && inferred_tag.size.is_some() {
+            inferred_tag.value_type = ValueType::Arr;
+        }
+
         let mut items = Vec::new();
         let mut index = 0;
         while index < total_bytes {
             let mut child_tag = Tag::new();
-            child_tag.inherit(tag);
-            if tag.child_type == ValueType::Unknown {
+            child_tag.inherit(&inferred_tag);
+            if inferred_tag.child_type == ValueType::Unknown {
                 if child_tag.value_type == ValueType::Unknown {
-                    child_tag.value_type = tag.value_type;
+                    child_tag.value_type = inferred_tag.value_type;
                 }
                 if child_tag.enums.is_none() {
-                    child_tag.enums = tag.enums.clone();
+                    child_tag.enums = inferred_tag.enums.clone();
                 }
                 if child_tag.mime.is_none() {
-                    child_tag.mime = tag.mime.clone();
+                    child_tag.mime = inferred_tag.mime.clone();
                 }
                 if child_tag.version.is_none() {
-                    child_tag.version = tag.version;
+                    child_tag.version = inferred_tag.version;
                 }
-                if child_tag.location.is_none() && tag.location.is_some() {
-                    child_tag.location = tag.location;
+                if child_tag.location.is_none() && inferred_tag.location.is_some() {
+                    child_tag.location = inferred_tag.location;
                 }
             }
             let before = self.offset;
@@ -745,10 +721,10 @@ impl Decoder {
             items.push(item);
         }
 
-        Ok(Node::Array(Array {
+        Ok(Node::Array(NodeArray {
             items,
             path: String::new(),
-            tag: Some(tag.clone()),
+            tag: Some(inferred_tag),
         }))
     }
 
@@ -793,7 +769,7 @@ impl Decoder {
             fields.push(Field { key, value });
         }
 
-        Ok(Node::Object(Object {
+        Ok(Node::Object(NodeObject {
             fields,
             path: String::new(),
             tag: Some(tag.clone()),

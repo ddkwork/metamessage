@@ -1,12 +1,12 @@
 package io.github.metamessage.jsonc
 
 import io.github.metamessage.core.CamelToSnake
-import io.github.metamessage.ir.Array as AstArray
 import io.github.metamessage.ir.Field
 import io.github.metamessage.ir.Node
-import io.github.metamessage.ir.Object as AstObject
+import io.github.metamessage.ir.NodeArray as AstArray
+import io.github.metamessage.ir.NodeObject as AstObject
+import io.github.metamessage.ir.NodeScalar
 import io.github.metamessage.ir.Tag
-import io.github.metamessage.ir.Value
 import io.github.metamessage.ir.ValueType
 import java.math.BigInteger
 import java.time.LocalDate
@@ -112,7 +112,7 @@ class JsoncParser(private val tokens: List<JsoncToken>) {
                                         )
                             }
 
-                    return Value(
+                    return NodeScalar(
                             data = result.first,
                             text = result.second ?: "",
                             tag = tag,
@@ -137,7 +137,12 @@ class JsoncParser(private val tokens: List<JsoncToken>) {
                             } else {
                                 result.first
                             }
-                    return Value(data = data, text = result.second ?: "", tag = tag, path = path)
+                    return NodeScalar(
+                            data = data,
+                            text = result.second ?: "",
+                            tag = tag,
+                            path = path
+                    )
                 }
                 JsoncTokenType.True -> {
                     val tag = consumeCommentsFor(tok.line) ?: Tag()
@@ -159,7 +164,7 @@ class JsoncParser(private val tokens: List<JsoncToken>) {
                         throw JsoncException(result.error ?: "Boolean validation failed")
                     }
 
-                    return Value(data = true, text = "true", tag = tag, path = path)
+                    return NodeScalar(data = true, text = "true", tag = tag, path = path)
                 }
                 JsoncTokenType.False -> {
                     val tag = consumeCommentsFor(tok.line) ?: Tag()
@@ -179,12 +184,12 @@ class JsoncParser(private val tokens: List<JsoncToken>) {
                         }
                     }
 
-                    return Value(data = false, text = "false", tag = tag, path = path)
+                    return NodeScalar(data = false, text = "false", tag = tag, path = path)
                 }
                 JsoncTokenType.Null -> {
                     val tag = consumeCommentsFor(tok.line) ?: Tag()
                     tag.inheritFromArrayParent(pendingParentTag)
-                    return Value(data = null, text = "null", tag = tag, path = path)
+                    return NodeScalar(data = null, text = "null", tag = tag, path = path)
                 }
                 else -> throw JsoncException("unexpected token ${tok.type}")
             }
@@ -682,7 +687,6 @@ class JsoncParser(private val tokens: List<JsoncToken>) {
 
         val obj = AstObject(tag = tag, path = currentPath)
 
-        var valNode: Node? = null
         while (true) {
             val tok = peek()
             if (tok.type == JsoncTokenType.EOF) break
@@ -710,7 +714,7 @@ class JsoncParser(private val tokens: List<JsoncToken>) {
 
             next()
             val fieldPath = "$currentPath.$keyStr"
-            valNode = parse(fieldPath) ?: continue
+            val valNode = parse(fieldPath) ?: continue
 
             val childTag = valNode.tag
             if (childTag != null && childTag.type == ValueType.MAP) {
@@ -764,7 +768,6 @@ class JsoncParser(private val tokens: List<JsoncToken>) {
 
         val arr = AstArray(tag = tag, path = currentPath)
 
-        var item: Node? = null
         var index = 0
         while (true) {
             val tok = peek()
@@ -788,7 +791,7 @@ class JsoncParser(private val tokens: List<JsoncToken>) {
             val itemPath = "$currentPath[$index]"
             val savedParentTag = pendingParentTag
             pendingParentTag = tag
-            item = parse(itemPath) ?: continue
+            val item = parse(itemPath) ?: continue
             pendingParentTag = savedParentTag
 
             arr.items.add(item)
@@ -1037,7 +1040,7 @@ class JsoncParser(private val tokens: List<JsoncToken>) {
         val existing = n.tag
         val merged = mergeTag(existing, parsed)
         when (n) {
-            is Value -> n.tag = merged
+            is NodeScalar -> n.tag = merged
             is AstObject -> n.tag = merged
             is AstArray -> n.tag = merged
             is io.github.metamessage.ir.Doc -> n.tag = merged
