@@ -400,8 +400,8 @@ function valueToNode(v: any, tag: Tag, depth: number, path: string): Node {
             text = result.text || '';
             break;
           }
-          case ValueType.Image: {
-            const result = tag.validateImage(v);
+          case ValueType.Media: {
+            const result = tag.validateMedia(v);
             if (!result.valid) {
               throw new Error(`validate failed: ${result.error}`);
             }
@@ -564,7 +564,9 @@ function anyToArray(
 
   const result = tag.validateVec(arr);
   if (!result.valid) {
-    throw new Error(`validate failed: ${result.error}`);
+    if (!tag.example) {
+      throw new Error(`validate failed: ${result.error}`);
+    }
   }
 
   return arrNode;

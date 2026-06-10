@@ -335,10 +335,7 @@ public class WireEncoder
             _buf.WriteAll(payload);
             return payload.Length;
         }
-        var tEnc = new WireEncoder();
-        tEnc.EncodeTagInner(rawTagFields);
-        byte[] tagEncoded = tEnc.ToByteArray();
-        int length = tagEncoded.Length + payload.Length;
+        int length = rawTagFields.Length + payload.Length;
         if (length > WireConstants.MAX_2)
         {
             throw new Exception("Tag+payload too long");
@@ -347,15 +344,15 @@ public class WireEncoder
         int sign = Prefix.TAG;
         if (length < WireConstants.TAG_LEN_1)
         {
-            _buf.WriteWithMultipleBytes(sign | length, tagEncoded, payload);
+            _buf.WriteWithMultipleBytes(sign | length, rawTagFields, payload);
         }
         else if (length < WireConstants.MAX_1)
         {
-            _buf.WriteWithMultipleBytes(sign | WireConstants.TAG_LEN_1, (byte)length, tagEncoded, payload);
+            _buf.WriteWithMultipleBytes(sign | WireConstants.TAG_LEN_1, (byte)length, rawTagFields, payload);
         }
         else
         {
-            _buf.WriteWithMultipleBytes(sign | WireConstants.TAG_LEN_2, (byte)(length >> 8), (byte)length, tagEncoded, payload);
+            _buf.WriteWithMultipleBytes(sign | WireConstants.TAG_LEN_2, (byte)(length >> 8), (byte)length, rawTagFields, payload);
         }
         return _buf.Length - start;
     }
@@ -364,6 +361,20 @@ public class WireEncoder
     {
         byte[] bits = BigIntWireCodec.EncodeSignedDecimal(s);
         return EncodeBytes(bits);
+    }
+
+    /// <summary>
+    /// Encodes raw tag bytes with a length prefix (matching Go's encodeT).
+    /// Returns the prefixed tag bytes, or empty array if rawTagBytes is empty.
+    /// </summary>
+    public static byte[] EncodeTagBytesWithPrefix(byte[] rawTagBytes)
+    {
+        if (rawTagBytes.Length == 0)
+            return Array.Empty<byte>();
+
+        var enc = new WireEncoder();
+        enc.EncodeTagInner(rawTagBytes);
+        return enc.ToByteArray();
     }
 
     public static bool TryEncodeSimpleByName(WireEncoder enc, string name)
